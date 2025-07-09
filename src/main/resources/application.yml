@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: arch-manager-back
+  output:
+    ansi:
+      enabled: ALWAYS
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: MonMotDePasse123
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: true
+
+app:
+  docker:
+    host: "npipe:////./pipe/docker_engine"
+    neo4j-image: "neo4j:5.26-community"
+    memory-limit: 4294967296 # 4GB
+    passwordLength: 16
+    volume-path: "/data"
+
+  neo4j:
+    bolt-port: 7687
+    http-port: 7474
+    auth-url: "NEO4J_AUTH=neo4j/"
+
+  project:
+    slug-prefix: "proj-"
+    volume-suffix: "_data"
+    max-name-length: 50
+
+  healthcheck:
+    interval: 1s
+    timeout: 30s
+    start-period: 3s
+    retries: 20
+    cmd-shell: "CMD-SHELL"
+    cmd-template: "wget -qO- http://localhost:%d || exit 1"
+
+security:
+  jwt:
+    secret: "ChangeThisToARealSecretKeyChangeThisToARealSecretKey"
+    expiration-ms: 3600000
+
+logging:
+  level:
+    root: INFO
+    com.archmanager_back: DEBUG
+  pattern:
+    console: >-
+      %clr(%d{HH:mm:ss.SSS}){faint} 
+      %highlight(%-5level){faint,blue,green,yellow,red} 
+      %clr([%thread]){faint} 
+      %clr(%-40.40logger{39}){cyan} : 
+      %msg%n%wEx

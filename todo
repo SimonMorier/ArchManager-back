@@ -1,0 +1,9 @@
+    Check deco et project switching
+
+Refacto string validator
+Changer nom du projet service
+change bolt://localhost: occurence
+input project name when creating
+generate real jwt token secret
+remove db http port in db
+facto logs pour avoir user
