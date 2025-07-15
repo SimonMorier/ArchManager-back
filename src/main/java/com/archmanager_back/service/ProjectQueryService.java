@@ -1,7 +1,5 @@
 package com.archmanager_back.service;
 
-import org.neo4j.driver.Driver;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.data.neo4j.core.Neo4jClient;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;

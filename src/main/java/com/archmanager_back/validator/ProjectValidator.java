@@ -1,9 +1,14 @@
-// src/main/java/com/archmanager_back/validator/ProjectValidator.java
 package com.archmanager_back.validator;
 
 import com.archmanager_back.config.constant.AppProperties;
 import com.archmanager_back.exception.ProjectValidationException;
 import lombok.RequiredArgsConstructor;
+
+import static com.archmanager_back.config.constant.ErrorLabel.PROJECT_NAME_EMPTY;
+import static com.archmanager_back.config.constant.ErrorLabel.PROJECT_NAME_TOO_LONG;
+import static com.archmanager_back.config.constant.ErrorLabel.PROJECT_SLUG_EMPTY;
+import static com.archmanager_back.config.constant.ErrorLabel.USERNAME_EMPTY;
+
 import org.springframework.stereotype.Component;
 
 @Component
@@ -12,25 +17,23 @@ public class ProjectValidator {
 
     private final AppProperties props;
 
-    /** Validate name input for createAndStart(...). */
     public void validateProjectName(String name) {
         if (name == null || name.isBlank()) {
-            throw new ProjectValidationException("Project name must not be empty");
+            throw new ProjectValidationException(PROJECT_NAME_EMPTY);
         }
         int maxLen = props.getProject().getMaxNameLength();
         if (name.length() > maxLen) {
             throw new ProjectValidationException(
-                "Project name must be at most " + maxLen + " characters");
+                    String.format(PROJECT_NAME_TOO_LONG, maxLen));
         }
     }
 
-    /** Validate slug & username input for connectProject(...). */
     public void validateConnectParams(String slug, String username) {
         if (slug == null || slug.isBlank()) {
-            throw new ProjectValidationException("Project slug must not be empty");
+            throw new ProjectValidationException(PROJECT_SLUG_EMPTY);
         }
         if (username == null || username.isBlank()) {
-            throw new ProjectValidationException("Username must not be empty");
+            throw new ProjectValidationException(USERNAME_EMPTY);
         }
     }
 }

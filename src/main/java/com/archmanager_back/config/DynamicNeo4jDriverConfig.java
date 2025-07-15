@@ -1,4 +1,3 @@
-// src/main/java/com/archmanager_back/config/DynamicNeo4jDriverConfig.java
 package com.archmanager_back.config;
 
 import com.archmanager_back.config.constant.AppProperties;

@@ -19,7 +19,7 @@ import static com.archmanager_back.config.constant.ErrorLabel.*;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class ProjectProvisioningService {
+public class ProjectService {
 
     private final AppProperties props;
     private final ProjectRepository projectRepo;
@@ -36,7 +36,6 @@ public class ProjectProvisioningService {
         String password = Project.generatePassword(props.getDocker().getPasswordLength());
         String volumeName = Project.generateVolumeName(slug, props.getProject().getVolumeSuffix());
 
-        // delegate all Docker work here:
         ContainerInstance inst = dockerService.provisionContainer(slug, password, volumeName);
 
         Project p = new Project();
@@ -46,6 +45,7 @@ public class ProjectProvisioningService {
         p.setBoltPort(inst.hostBoltPort());
         p.setVolumeName(volumeName);
         p.setPassword(password);
+        p.incrementSessions();
         return projectRepo.save(p);
     }
 
@@ -60,9 +60,20 @@ public class ProjectProvisioningService {
 
         permissionValidator.requirePermission(user, project, Role.READ);
 
-        // delegate container start/recreate
         dockerService.ensureProjectRunning(project);
 
+        project.incrementSessions();
+        projectRepo.save(project);
+
         return project;
+    }
+
+    @Transactional
+    public void disconnectProject(Long projectId) {
+        Project p = projectRepo.findById(projectId)
+                .orElseThrow(() -> new NoSuchElementException("Project not found: " + projectId));
+        p.decrementSessions();
+        projectRepo.save(p);
+        log.debug("Project {} sessions decremented, now {}", p.getSlug(), p.getActiveSessionCount());
     }
 }

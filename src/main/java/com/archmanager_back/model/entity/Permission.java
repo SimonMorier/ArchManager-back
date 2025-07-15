@@ -4,42 +4,33 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(
-  name = "permissions",
-  uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "project_id"})
-)
+@Table(name = "permissions", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "project_id" }))
 @Data
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 @NoArgsConstructor
 @AllArgsConstructor
 public class Permission {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private Long id;
+  @EqualsAndHashCode.Include
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "user_id", nullable = false)
+  private User user;
 
-    /**
-     * On inclut user et project dans equals/hashCode
-     * afin qu’au moment de la seed, deux Permission
-     * (mêmes user, même project) ne soient pas confondues.
-     */
-    @EqualsAndHashCode.Include
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+  @EqualsAndHashCode.Include
+  @ManyToOne(optional = false)
+  @JoinColumn(name = "project_id", nullable = false)
+  private Project project;
 
-    @EqualsAndHashCode.Include
-    @ManyToOne(optional = false)
-    @JoinColumn(name = "project_id", nullable = false)
-    private Project project;
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false)
+  private Role role;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private Role role;
-
-    public Permission(User user, Project project, Role role) {
-        this.user = user;
-        this.project = project;
-        this.role = role;
-    }
+  public Permission(User user, Project project, Role role) {
+    this.user = user;
+    this.project = project;
+    this.role = role;
+  }
 }

@@ -38,7 +38,7 @@ app:
 
   healthcheck:
     interval: 1s
-    timeout: 30s
+    timeout: 60s
     start-period: 3s
     retries: 20
     cmd-shell: "CMD-SHELL"
@@ -46,7 +46,7 @@ app:
 
 security:
   jwt:
-    secret: "ChangeThisToARealSecretKeyChangeThisToARealSecretKey"
+    secret: "34732f9990801d21323cc8a4bb9289e607e1571c56a4d514a1dc3d7d"
     expiration-ms: 3600000
 
 logging:
@@ -55,8 +55,12 @@ logging:
     com.archmanager_back: DEBUG
   pattern:
     console: >-
-      %clr(%d{HH:mm:ss.SSS}){faint} 
-      %highlight(%-5level){faint,blue,green,yellow,red} 
+      %clr(%d{HH:mm:ss.SSS}) 
+      %highlight(%-5level){error:red,
+        warn:yellow,
+        info:cyan,
+        debug:green,
+        trace:magenta} 
       %clr([%thread]){faint} 
-      %clr(%-40.40logger{39}){cyan} : 
+      %clr(%-40.40logger{39}){blue} : 
       %msg%n%wEx

@@ -1,4 +1,3 @@
-// src/main/java/com/archmanager_back/model/entity/User.java
 package com.archmanager_back.model.entity;
 
 import jakarta.persistence.*;
@@ -13,7 +12,8 @@ import java.util.*;
 @AllArgsConstructor
 public class User {
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -31,7 +31,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Permission> permissions = new HashSet<>();
 
-    // helper pour bidirectionnalité
     public void addPermission(Permission perm) {
         permissions.add(perm);
         perm.setUser(this);

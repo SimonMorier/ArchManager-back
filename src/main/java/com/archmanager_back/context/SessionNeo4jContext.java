@@ -42,7 +42,7 @@ public class SessionNeo4jContext {
             this.uri = "bolt://localhost:" + project.getBoltPort();
 
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName(); // toujours présent
+            String username = auth.getName();
 
             log.debug("[user: {}] Initializing driver for project {} at {}",
                     username, project.getSlug(), uri);

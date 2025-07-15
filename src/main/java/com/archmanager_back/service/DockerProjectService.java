@@ -118,9 +118,6 @@ public class DockerProjectService {
         }
     }
 
-    // ─── Internals
-    // ────────────────────────────────────────────────────────────────
-
     private void recreateWithNewPort(Project project) throws InterruptedException {
         String oldId = project.getContainerId();
 
@@ -216,10 +213,6 @@ public class DockerProjectService {
                 .withRetries(props.getHealthcheck().getRetries());
     }
 
-    /**
-     * Inspecte le container, récupère le port hôte lié au bolt interne,
-     * et met à jour la donnée en base si elle a changé.
-     */
     private void syncPortFromContainer(Project project, InspectContainerResponse info) {
         ExposedPort bolt = ExposedPort.tcp(props.getNeo4j().getBoltPort());
         String hostPortSpec = info.getNetworkSettings()
@@ -233,6 +226,19 @@ public class DockerProjectService {
             project.setBoltPort(actualPort);
             projectRepo.save(project);
             log.debug("Project {} updated with port {}", project.getSlug(), actualPort);
+        }
+    }
+
+    public void stopContainer(String containerId) {
+        try {
+            docker.stopContainerCmd(containerId).exec();
+        } catch (Exception e) {
+            log.warn("Failed to stop container {}: {}", containerId, e.getMessage());
+        }
+        try {
+            docker.removeContainerCmd(containerId).exec();
+        } catch (Exception e) {
+            log.warn("Failed to remove container {}: {}", containerId, e.getMessage());
         }
     }
 }

@@ -1,37 +1,39 @@
-// src/main/java/com/archmanager_back/validator/UserValidator.java
 package com.archmanager_back.validator;
+
+import static com.archmanager_back.config.constant.ErrorLabel.PASSWORD_EMPTY;
+import static com.archmanager_back.config.constant.ErrorLabel.PASSWORD_TOO_SHORT;
+import static com.archmanager_back.config.constant.ErrorLabel.REQUEST_BODY_NULL;
+import static com.archmanager_back.config.constant.ErrorLabel.USERNAME_EMPTY;
 
 import com.archmanager_back.exception.UserValidationException;
 import com.archmanager_back.model.dto.UserRequestDTO;
 
 public final class UserValidator {
 
-    private UserValidator() {}
-
-    /** Valide les données reçues lors de l’inscription. */
-    public static void validateRegistration(UserRequestDTO dto) {
-        if (dto == null) {
-            throw new UserValidationException("Request body must not be null");
-        }
-        if (dto.getUsername() == null || dto.getUsername().isBlank()) {
-            throw new UserValidationException("Username must not be empty");
-        }
-        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
-            throw new UserValidationException("Password must not be empty");
-        }
-        if (dto.getPassword().length() < 8) {
-            throw new UserValidationException("Password must be at least 8 characters");
-        }
-        // autres règles (regex, email, etc.) à ajouter ici
+    private UserValidator() {
     }
 
-    /** Valide les données reçues lors du login. */
+    public static void validateRegistration(UserRequestDTO dto) {
+        if (dto == null) {
+            throw new UserValidationException(REQUEST_BODY_NULL);
+        }
+        if (dto.getUsername() == null || dto.getUsername().isBlank()) {
+            throw new UserValidationException(USERNAME_EMPTY);
+        }
+        if (dto.getPassword() == null || dto.getPassword().isBlank()) {
+            throw new UserValidationException(PASSWORD_EMPTY);
+        }
+        if (dto.getPassword().length() < 8) {
+            throw new UserValidationException(PASSWORD_TOO_SHORT);
+        }
+    }
+
     public static void validateLogin(String username, String password) {
         if (username == null || username.isBlank()) {
-            throw new UserValidationException("Username must not be empty");
+            throw new UserValidationException(USERNAME_EMPTY);
         }
         if (password == null || password.isBlank()) {
-            throw new UserValidationException("Password must not be empty");
+            throw new UserValidationException(PASSWORD_EMPTY);
         }
     }
 }

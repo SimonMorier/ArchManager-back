@@ -3,7 +3,7 @@ package com.archmanager_back.controller;
 import com.archmanager_back.context.SessionNeo4jContext;
 import com.archmanager_back.model.dto.ProjectDTO;
 import com.archmanager_back.model.entity.Project;
-import com.archmanager_back.service.ProjectProvisioningService;
+import com.archmanager_back.service.ProjectService;
 
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -22,15 +22,18 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class ProjectController {
 
-    private final ProjectProvisioningService provisioning;
+    private final ProjectService provisioning;
     private final SessionNeo4jContext sessionNeo4jContext;
 
-    @PostMapping
-    public ResponseEntity<ProjectDTO> createProject() {
+    @PostMapping("/{name}")
+    public ResponseEntity<ProjectDTO> createProject(
+            @PathVariable("name") String name) {
         try {
-            Project p = provisioning.createAndStart("New Project");
-            return ResponseEntity
-                    .ok(new ProjectDTO(p.getSlug(), "bolt://localhost:" + p.getBoltPort()));
+            Project p = provisioning.createAndStart(name);
+            ProjectDTO dto = new ProjectDTO(
+                    p.getSlug(),
+                    "bolt://localhost:" + p.getBoltPort());
+            return ResponseEntity.ok(dto);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -43,19 +46,20 @@ public class ProjectController {
             @AuthenticationPrincipal UserDetails userDetails,
             HttpSession session) {
         try {
+
+            Long previousProjectId = (Long) session.getAttribute("currentProjectId");
+            if (previousProjectId != null) {
+                provisioning.disconnectProject(previousProjectId);
+            }
+
             Project p = provisioning.connectProject(slug, userDetails.getUsername());
-            // 1) on stocke l’ID du projet en session
             session.setAttribute("currentProjectId", p.getId());
 
-            // 2) on force la ré-initialisation du Driver dans SessionNeo4jContext
-            // (fermeture de l’ancien, création du nouveau)
             sessionNeo4jContext.getDriver();
 
-            // 3) on renvoie l’URL à l’appelant
             ProjectDTO dto = new ProjectDTO(
                     p.getSlug(),
-                    sessionNeo4jContext.getUri() // ou "bolt://localhost:" + p.getBoltPort()
-            );
+                    sessionNeo4jContext.getUri());
             return ResponseEntity.ok(dto);
 
         } catch (InterruptedException e) {
@@ -68,5 +72,22 @@ public class ProjectController {
         } catch (NoSuchElementException nse) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
         }
+    }
+
+    @PostMapping("/disconnect")
+    public ResponseEntity<Void> disconnectProject(HttpSession session) {
+        Long projectId = (Long) session.getAttribute("currentProjectId");
+        if (projectId != null) {
+            provisioning.disconnectProject(projectId);
+            session.removeAttribute("currentProjectId");
+            try {
+                if (sessionNeo4jContext.getDriver() != null) {
+                    sessionNeo4jContext.getDriver().close();
+                }
+            } catch (Exception ignored) {
+            }
+        }
+        // Toujours retourner 204 même si aucun projet n'était connecté
+        return ResponseEntity.noContent().build();
     }
 }

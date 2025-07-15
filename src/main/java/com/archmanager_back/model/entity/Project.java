@@ -2,6 +2,10 @@ package com.archmanager_back.model.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.*;
 
 @Entity
@@ -11,7 +15,8 @@ import java.util.*;
 @AllArgsConstructor
 public class Project {
 
-    @Id @GeneratedValue
+    @Id
+    @GeneratedValue
     private Long id;
 
     @Column(unique = true)
@@ -29,7 +34,27 @@ public class Project {
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Permission> permissions = new HashSet<>();
 
-     public static String generateSlug(String prefix) {
+    @Column(nullable = false)
+    private int activeSessionCount = 0;
+
+    @Column
+    private Instant lastActivity;
+
+    public void touchActivity() {
+        this.lastActivity = Instant.now();
+    }
+
+    public void incrementSessions() {
+        this.activeSessionCount++;
+        touchActivity();
+    }
+
+    public void decrementSessions() {
+        this.activeSessionCount = Math.max(0, this.activeSessionCount - 1);
+        touchActivity();
+    }
+
+    public static String generateSlug(String prefix) {
         return prefix + UUID.randomUUID().toString().substring(0, 8);
     }
 
@@ -46,8 +71,7 @@ public class Project {
         }
         return sb.toString();
     }
-    
-    // helper pour bidirectionnalité
+
     public void addPermission(Permission perm) {
         permissions.add(perm);
         perm.setProject(this);
@@ -56,5 +80,10 @@ public class Project {
     public void removePermission(Permission perm) {
         permissions.remove(perm);
         perm.setProject(null);
+    }
+
+    // Conversion pour affichage ou logique métier
+    public ZonedDateTime getLastActivityInNL() {
+        return lastActivity != null ? lastActivity.atZone(ZoneId.of("Europe/Amsterdam")) : null;
     }
 }

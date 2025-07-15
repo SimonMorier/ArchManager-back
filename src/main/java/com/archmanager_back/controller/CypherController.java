@@ -15,13 +15,9 @@ public class CypherController {
 
     private final ProjectQueryService queryService;
 
-    /**
-     * GET /api/projects/query/count
-     * Returns JSON like: [ { "nodeCount": 42 } ]
-     */
     @GetMapping("/count")
-    public ResponseEntity<List<Map<String,Object>>> countNodes() {
-        List<Map<String,Object>> result = queryService.countNodes();
+    public ResponseEntity<List<Map<String, Object>>> countNodes() {
+        List<Map<String, Object>> result = queryService.countNodes();
         return ResponseEntity.ok(result);
     }
 }

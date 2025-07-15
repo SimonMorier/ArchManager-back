@@ -1,4 +1,3 @@
-// src/main/java/com/archmanager_back/validator/PermissionValidator.java
 package com.archmanager_back.validator;
 
 import com.archmanager_back.config.constant.ErrorLabel;
@@ -27,14 +26,13 @@ public class PermissionValidator {
      */
     public Permission requirePermission(User user, Project project, Role minRole) {
         Permission perm = permRepo
-            .findByUserIdAndProjectId(user.getId(), project.getId())
-            .orElseThrow(() ->
-                new InsufficientPermissionException(
-                    ErrorLabel.NO_PERMISSION_ON_PROJECT));
+                .findByUserIdAndProjectId(user.getId(), project.getId())
+                .orElseThrow(() -> new InsufficientPermissionException(
+                        ErrorLabel.NO_PERMISSION_ON_PROJECT));
 
         if (perm.getRole().ordinal() < minRole.ordinal()) {
             throw new InsufficientPermissionException(
-                ErrorLabel.PERMISSION_INSUFFICIENT);
+                    ErrorLabel.PERMISSION_INSUFFICIENT);
         }
         return perm;
     }

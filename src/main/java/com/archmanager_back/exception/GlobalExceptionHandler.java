@@ -22,6 +22,13 @@ public class GlobalExceptionHandler {
                 .body(ex.getMessage());
     }
 
+    @ExceptionHandler(InsufficientPermissionException.class)
+    public ResponseEntity<String> handleInsufficientPermission(InsufficientPermissionException ex) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(ex.getMessage());
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<String> handleGeneral(Exception ex) {
         return ResponseEntity

@@ -63,7 +63,6 @@
 		  <artifactId>docker-java-transport-zerodep</artifactId>
 		  <version>3.2.13</version>
 		</dependency>
-		
 
         <dependency>
             <groupId>org.projectlombok</groupId>

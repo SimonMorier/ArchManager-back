@@ -1,6 +1,6 @@
 package com.archmanager_back.config.db;
 
-import java.util.Optional;
+import java.time.Instant;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -25,8 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class DataSeeder implements CommandLineRunner {
 
-    private final UserRepository        userRepository;
-    private final ProjectRepository     projectRepository;
+    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
@@ -38,22 +38,26 @@ public class DataSeeder implements CommandLineRunner {
 
         // projet #1
         Project proj1 = new Project();
-        proj1.setSlug("proj-75969c6d");
+        proj1.setSlug(Project.generateSlug("proj-"));
         proj1.setBoltPort(60130);
         proj1.setContainerId("6a2785b5944cfe3f31431542b31011260f969034847375d8552c59025e4ff020");
-        proj1.setVolumeName("proj-75969c6d_data");
-        proj1.setPassword("password1"); 
+        proj1.setVolumeName(Project.generateVolumeName(proj1.getSlug(), "_data"));
+        proj1.setPassword(Project.generatePassword(12));
         proj1.setName("Project One");
+        proj1.setActiveSessionCount(0);
+        proj1.setLastActivity(Instant.now());
         projectRepository.save(proj1);
 
         // projet #2
         Project proj2 = new Project();
-        proj2.setSlug("proj-a64eeed2");
+        proj2.setSlug(Project.generateSlug("proj-"));
         proj2.setBoltPort(60161);
         proj2.setContainerId("7c1f2f3f8d0268309ae94c4beb6bf680af6d9b130f8596e5515775b648bb56c7");
-        proj2.setVolumeName("proj-a64eeed2_data");
-        proj2.setPassword("password2"); 
+        proj2.setVolumeName(Project.generateVolumeName(proj2.getSlug(), "_data"));
+        proj2.setPassword(Project.generatePassword(12));
         proj2.setName("Project Two");
+        proj2.setActiveSessionCount(0);
+        proj2.setLastActivity(Instant.now());
         projectRepository.save(proj2);
 
         // -- user1
@@ -63,7 +67,6 @@ public class DataSeeder implements CommandLineRunner {
         user1.setLastname("One");
         user1.setPassword(passwordEncoder.encode("password1"));
 
-        // Permissions et association bidirectionnelle
         Permission perm1 = new Permission(user1, proj1, Role.ADMIN);
         user1.addPermission(perm1);
         proj1.addPermission(perm1);
