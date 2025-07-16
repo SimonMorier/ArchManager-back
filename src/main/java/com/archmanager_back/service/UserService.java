@@ -6,11 +6,14 @@ import com.archmanager_back.mapper.UserMapper;
 import com.archmanager_back.model.dto.AuthResponseDTO;
 import com.archmanager_back.model.dto.UserRequestDTO;
 import com.archmanager_back.model.dto.UserResponseDTO;
-import com.archmanager_back.model.entity.User;
+import com.archmanager_back.model.entity.jpa.User;
 import com.archmanager_back.repository.jpa.UserRepository;
 import com.archmanager_back.security.JwtUtil;
 import com.archmanager_back.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
+
+import java.util.Optional;
+
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -56,5 +59,9 @@ public class UserService {
         UserResponseDTO userDto = userMapper.toResponseDto(user);
         String token = jwtUtil.generateToken(user.getUsername());
         return new AuthResponseDTO(userDto, token);
+    }
+
+    public Optional<User> findByUsername(String username) {
+        return userRepository.findByUsername(username);
     }
 }

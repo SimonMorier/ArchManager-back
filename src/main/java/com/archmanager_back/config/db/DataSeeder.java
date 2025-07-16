@@ -8,10 +8,10 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.archmanager_back.model.entity.Permission;
-import com.archmanager_back.model.entity.Project;
-import com.archmanager_back.model.entity.Role;
-import com.archmanager_back.model.entity.User;
+import com.archmanager_back.model.domain.RoleEnum;
+import com.archmanager_back.model.entity.jpa.Permission;
+import com.archmanager_back.model.entity.jpa.Project;
+import com.archmanager_back.model.entity.jpa.User;
 import com.archmanager_back.repository.jpa.ProjectRepository;
 import com.archmanager_back.repository.jpa.UserRepository;
 
@@ -67,11 +67,11 @@ public class DataSeeder implements CommandLineRunner {
         user1.setLastname("One");
         user1.setPassword(passwordEncoder.encode("password1"));
 
-        Permission perm1 = new Permission(user1, proj1, Role.ADMIN);
+        Permission perm1 = new Permission(user1, proj1, RoleEnum.ADMIN);
         user1.addPermission(perm1);
         proj1.addPermission(perm1);
 
-        Permission perm2 = new Permission(user1, proj2, Role.EDIT);
+        Permission perm2 = new Permission(user1, proj2, RoleEnum.EDIT);
         user1.addPermission(perm2);
         proj2.addPermission(perm2);
 
@@ -84,11 +84,11 @@ public class DataSeeder implements CommandLineRunner {
         user2.setLastname("Two");
         user2.setPassword(passwordEncoder.encode("password2"));
 
-        Permission perm3 = new Permission(user2, proj1, Role.READ);
+        Permission perm3 = new Permission(user2, proj1, RoleEnum.READ);
         user2.addPermission(perm3);
         proj1.addPermission(perm3);
 
-        Permission perm4 = new Permission(user2, proj2, Role.ADMIN);
+        Permission perm4 = new Permission(user2, proj2, RoleEnum.ADMIN);
         user2.addPermission(perm4);
         proj2.addPermission(perm4);
 

@@ -4,7 +4,7 @@ package com.archmanager_back.service;
 import com.archmanager_back.config.constant.AppProperties;
 import com.archmanager_back.config.constant.DockerHealthConstants;
 import com.archmanager_back.model.domain.ContainerInstance;
-import com.archmanager_back.model.entity.Project;
+import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.repository.jpa.ProjectRepository;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
@@ -231,14 +231,17 @@ public class DockerProjectService {
 
     public void stopContainer(String containerId) {
         try {
+            var info = docker.inspectContainerCmd(containerId).exec();
+            if (!info.getState().getRunning()) {
+                log.info("Container {} is already stopped.", containerId);
+                return;
+            }
             docker.stopContainerCmd(containerId).exec();
+        } catch (com.github.dockerjava.api.exception.NotFoundException nf) {
+            log.warn("Container {} not found, removing project from DB.", containerId);
+            projectRepo.findByContainerId(containerId).ifPresent(projectRepo::delete);
         } catch (Exception e) {
             log.warn("Failed to stop container {}: {}", containerId, e.getMessage());
-        }
-        try {
-            docker.removeContainerCmd(containerId).exec();
-        } catch (Exception e) {
-            log.warn("Failed to remove container {}: {}", containerId, e.getMessage());
         }
     }
 }

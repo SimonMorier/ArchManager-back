@@ -1,6 +1,6 @@
 package com.archmanager_back.security;
 
-import com.archmanager_back.model.entity.User;
+import com.archmanager_back.model.entity.jpa.User;
 import com.archmanager_back.repository.jpa.UserRepository;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,7 +28,6 @@ public class CustomUserDetailsService implements UserDetailsService {
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
-                Collections.emptyList()
-        );
+                Collections.emptyList());
     }
 }

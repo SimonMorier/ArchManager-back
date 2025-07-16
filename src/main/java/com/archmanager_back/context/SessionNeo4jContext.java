@@ -1,7 +1,8 @@
 package com.archmanager_back.context;
 
-import com.archmanager_back.model.entity.Project;
+import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.repository.jpa.ProjectRepository;
+import com.archmanager_back.util.LogUtils;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +11,6 @@ import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -41,11 +40,7 @@ public class SessionNeo4jContext {
                     .orElseThrow(() -> new IllegalStateException("Unknown project id in session"));
             this.uri = "bolt://localhost:" + project.getBoltPort();
 
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            String username = auth.getName();
-
-            log.debug("[user: {}] Initializing driver for project {} at {}",
-                    username, project.getSlug(), uri);
+            log.debug(LogUtils.userPrefixed("Initializing driver for project {} at {}"), project.getSlug(), uri);
 
             this.driver = GraphDatabase.driver(
                     uri,

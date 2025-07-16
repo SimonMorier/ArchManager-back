@@ -24,18 +24,23 @@ public class AppProperties {
         private int passwordLength;
         private String volumePath;
     }
+
     @Data
     public static class Neo4j {
         private int boltPort;
         private int httpPort;
         private String authUrl;
     }
+
     @Data
     public static class Project {
         private String slugPrefix;
         private String volumeSuffix;
         private int maxNameLength;
+        private int idleThreshold;
+        private int idleRateMs;
     }
+
     @Data
     public static class Healthcheck {
         private Duration interval;

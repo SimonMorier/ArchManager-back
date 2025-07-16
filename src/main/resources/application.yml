@@ -35,7 +35,8 @@ app:
     slug-prefix: "proj-"
     volume-suffix: "_data"
     max-name-length: 50
-
+    idle-threshold: 30
+    idle-rate-ms: 600000
   healthcheck:
     interval: 1s
     timeout: 60s

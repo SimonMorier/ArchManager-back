@@ -1,0 +1,54 @@
+package com.archmanager_back.service;
+
+import com.archmanager_back.model.domain.RoleEnum;
+import com.archmanager_back.model.dto.PermissionDTO;
+import com.archmanager_back.model.dto.PermissionRequestDTO;
+import com.archmanager_back.model.entity.jpa.Permission;
+import com.archmanager_back.model.entity.jpa.Project;
+import com.archmanager_back.model.entity.jpa.User;
+import com.archmanager_back.repository.jpa.ProjectRepository;
+import com.archmanager_back.repository.jpa.UserRepository;
+import com.archmanager_back.validator.PermissionValidator;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.NoSuchElementException;
+
+@Service
+@RequiredArgsConstructor
+public class PermissionService {
+
+    private final ProjectRepository projectRepo;
+    private final UserRepository userRepo;
+    private final PermissionValidator permissionValidator;
+
+    private User getUserWithPermissions(String username) {
+        return userRepo.findByUsernameWithPermissions(username)
+                .orElseThrow(() -> new NoSuchElementException("User not found: " + username));
+    }
+
+    private Project getProjectBySlug(String slug) {
+        return projectRepo.findBySlug(slug)
+                .orElseThrow(() -> new NoSuchElementException("Project not found: " + slug));
+    }
+
+    @Transactional
+    public PermissionRequestDTO grantPermission(String callerUsername, PermissionRequestDTO req) {
+        Project project = getProjectBySlug(req.getProjectSlug());
+        User caller = getUserWithPermissions(callerUsername);
+        permissionValidator.requirePermission(caller, project, RoleEnum.ADMIN);
+
+        User target = getUserWithPermissions(req.getUsername());
+
+        Permission perm = new Permission(target, project, req.getRole());
+        project.addPermission(perm);
+        projectRepo.save(project);
+
+        PermissionRequestDTO dto = new PermissionRequestDTO();
+        dto.setUsername(target.getUsername());
+        dto.setProjectSlug(perm.getProject().getSlug());
+        dto.setRole(perm.getRole());
+        return dto;
+    }
+}

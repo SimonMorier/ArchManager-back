@@ -1,0 +1,54 @@
+package com.archmanager_back.service.scheduler;
+
+import java.time.Duration;
+import java.time.Instant;
+import java.util.List;
+
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
+
+import com.archmanager_back.config.constant.AppProperties;
+import com.archmanager_back.model.entity.jpa.Project;
+import com.archmanager_back.repository.jpa.ProjectRepository;
+import com.archmanager_back.service.DockerProjectService;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class IdleContainerReaperScheduler {
+
+    private final ProjectRepository projectRepo;
+    private final DockerProjectService dockerService;
+    private final AppProperties props;
+
+    @Scheduled(fixedRateString = "#{@appProperties.project.idleRateMs}")
+    public void reap() {
+        Duration idleThreshold = Duration.ofMinutes(props.getProject().getIdleThreshold());
+        Instant cutoff = Instant.now().minus(idleThreshold);
+
+        List<Project> toStop = projectRepo.findAll().stream()
+                .filter(p -> p.getActiveSessionCount() == 0)
+                .filter(p -> p.getLastActivity() != null && p.getLastActivity().isBefore(cutoff))
+                .toList();
+
+        log.debug("IdleContainerReaper running: found {} idle projects to stop", toStop.size());
+
+        for (Project p : toStop) {
+            if (p.getContainerId() != null) {
+                log.info("Stopping idle container for project '{}', containerId={}", p.getSlug(), p.getContainerId());
+                dockerService.stopContainer(p.getContainerId());
+                if (projectRepo.existsById(p.getId())) {
+                    p.setContainerId(null);
+                    projectRepo.save(p);
+                } else {
+                    log.info("Project {} already deleted from DB, skipping save.", p.getSlug());
+                }
+            } else {
+                log.debug("Project '{}' has no container to stop.", p.getSlug());
+            }
+        }
+    }
+}

@@ -1,7 +1,5 @@
 package com.archmanager_back.mapper;
 
-import java.util.List;
-
 import org.mapstruct.BeanMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -11,8 +9,8 @@ import org.mapstruct.NullValuePropertyMappingStrategy;
 import com.archmanager_back.model.dto.PermissionDTO;
 import com.archmanager_back.model.dto.UserRequestDTO;
 import com.archmanager_back.model.dto.UserResponseDTO;
-import com.archmanager_back.model.entity.Permission;
-import com.archmanager_back.model.entity.User;
+import com.archmanager_back.model.entity.jpa.Permission;
+import com.archmanager_back.model.entity.jpa.User;
 
 @Mapper(componentModel = "spring")
 public interface UserMapper {

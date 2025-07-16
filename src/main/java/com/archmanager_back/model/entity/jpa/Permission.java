@@ -1,4 +1,6 @@
-package com.archmanager_back.model.entity;
+package com.archmanager_back.model.entity.jpa;
+
+import com.archmanager_back.model.domain.RoleEnum;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,9 +28,9 @@ public class Permission {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false)
-  private Role role;
+  private RoleEnum role;
 
-  public Permission(User user, Project project, Role role) {
+  public Permission(User user, Project project, RoleEnum role) {
     this.user = user;
     this.project = project;
     this.role = role;

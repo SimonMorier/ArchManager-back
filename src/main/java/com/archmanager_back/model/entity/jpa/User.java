@@ -1,4 +1,4 @@
-package com.archmanager_back.model.entity;
+package com.archmanager_back.model.entity.jpa;
 
 import jakarta.persistence.*;
 import lombok.*;

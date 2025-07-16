@@ -1,0 +1,133 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// 1) Projet
+// ─────────────────────────────────────────────────────────────────────────────
+MERGE (proj:Project {slug: 'proj-001'})
+  ON CREATE SET proj.name = 'proj-001', proj.created = datetime() 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 2) Arborescence Fichiers
+// ─────────────────────────────────────────────────────────────────────────────
+MERGE (srcFolder:Folder {path: '/src'})
+  ON CREATE SET srcFolder.name = 'src' 
+MERGE (testsFolder:Folder {path: '/tests'})
+  ON CREATE SET testsFolder.name = 'tests' 
+MERGE (docsFolder:Folder {path: '/docs'})
+  ON CREATE SET docsFolder.name = 'docs' 
+MERGE (utilsFolder:Folder {path: '/src/utils'})
+  ON CREATE SET utilsFolder.name = 'utils' 
+
+MERGE (proj)-[:INCLUDES]->(srcFolder) 
+MERGE (proj)-[:INCLUDES]->(testsFolder) 
+MERGE (proj)-[:INCLUDES]->(docsFolder) 
+
+MERGE (srcFolder)-[:CONTAINS]->(docsFolder) 
+MERGE (srcFolder)-[:CONTAINS]->(utilsFolder) 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 3) Fichiers
+// ─────────────────────────────────────────────────────────────────────────────
+MERGE (mainFile:File {path: '/src/Main.java'})
+  ON CREATE SET mainFile.name = 'Main.java' 
+MERGE (utilFile:File {path: '/src/utils/Utils.java'})
+  ON CREATE SET utilFile.name = 'Utils.java' 
+MERGE (testFile:File {path: '/tests/MainTest.java'})
+  ON CREATE SET testFile.name = 'MainTest.java' 
+
+MERGE (srcFolder)-[:CONTAINS]->(mainFile) 
+MERGE (utilsFolder)-[:CONTAINS]->(utilFile) 
+MERGE (testsFolder)-[:CONTAINS]->(testFile) 
+
+MERGE (mainFile)-[:REQUIRES]->(utilFile) 
+MERGE (testFile)-[:REQUIRES]->(mainFile) 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 4) Types et Déclarations
+// ─────────────────────────────────────────────────────────────────────────────
+MERGE (typeMain:Type {fqn: 'com.example.Main'})
+  ON CREATE SET typeMain.name = 'com.example.Main' 
+MERGE (typeUtil:Type {fqn: 'com.example.utils.Utils'})
+  ON CREATE SET typeUtil.name = 'com.example.utils.Utils' 
+MERGE (typeTest:Type {fqn: 'com.example.MainTest'})
+  ON CREATE SET typeTest.name = 'com.example.MainTest' 
+
+MERGE (mainFile)-[:DECLARES]->(typeMain) 
+MERGE (utilFile)-[:DECLARES]->(typeUtil) 
+MERGE (testFile)-[:DECLARES]->(typeTest) 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 5) Partie Logique (Scope, Opérations, Variables)
+// ─────────────────────────────────────────────────────────────────────────────
+// Scopes
+MERGE (appScope:Scope {name: 'com.example'})
+  ON CREATE SET appScope.name = 'com.example' 
+MERGE (testScope:Scope {name: 'com.example.tests'})
+  ON CREATE SET testScope.name = 'com.example.tests' 
+
+MERGE (appScope)-[:ENCLOSES]->(typeMain) 
+MERGE (appScope)-[:ENCLOSES]->(typeUtil) 
+MERGE (testScope)-[:ENCLOSES]->(typeTest) 
+
+// Héritage de type
+MERGE (typeTest)-[:SPECIALIZES]->(typeMain) 
+
+// Opérations
+MERGE (opMain:Operation {signature: 'void Main.main(String[])'})
+  ON CREATE SET opMain.name = 'Main.main' 
+MERGE (opHelper:Operation {signature: 'String Utils.helper()'})
+  ON CREATE SET opHelper.name = 'Utils.helper' 
+MERGE (opTest:Operation {signature: 'void MainTest.testMain()'})
+  ON CREATE SET opTest.name = 'MainTest.testMain' 
+
+// Types auxiliaires pour retours/instanciations
+MERGE (voidType:Type {fqn: 'void'})
+  ON CREATE SET voidType.name = 'void' 
+MERGE (stringArrayType:Type {fqn: 'java.lang.String[]'})
+  ON CREATE SET stringArrayType.name = 'java.lang.String[]' 
+
+MERGE (opMain)-[:RETURNS]->(voidType) 
+MERGE (opHelper)-[:RETURNS]->(typeUtil) 
+MERGE (opTest)-[:RETURNS]->(voidType) 
+
+MERGE (typeMain)-[:ENCAPSULATES]->(opMain) 
+MERGE (typeUtil)-[:ENCAPSULATES]->(opHelper) 
+MERGE (typeTest)-[:ENCAPSULATES]->(opTest) 
+
+MERGE (opMain)-[:INVOKES]->(opHelper) 
+MERGE (opTest)-[:INVOKES]->(opMain) 
+MERGE (opMain)-[:INSTANTIATES]->(stringArrayType) 
+
+// Variables
+MERGE (varArgs:Variable {name: 'args'})
+  ON CREATE SET varArgs.name = 'args' 
+MERGE (varCount:Variable {name: 'count'})
+  ON CREATE SET varCount.name = 'count' 
+
+MERGE (varArgs)-[:TYPED]->(stringArrayType) 
+MERGE (varCount)-[:TYPED]->(voidType) 
+MERGE (varArgs)-[:PARAMETERIZES]->(opMain) 
+MERGE (varCount)-[:PARAMETERIZES]->(opHelper) 
+MERGE (opMain)-[:USES]->(varArgs) 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 6) Analyse (Dimension, Catégorie, Metric, Implements)
+// ─────────────────────────────────────────────────────────────────────────────
+MERGE (dimPerf:Dimension {name: 'Performance'}) 
+MERGE (dimMaint:Dimension {name: 'Maintainability'}) 
+
+MERGE (catComplex:Category {name: 'Complexity'}) 
+MERGE (catCohesion:Category {name: 'Cohesion'}) 
+
+MERGE (catComplex)-[:COMPOSES]->(dimMaint) 
+MERGE (catCohesion)-[:COMPOSES]->(dimMaint) 
+MERGE (catCohesion)-[:REFINES]->(catComplex) 
+MERGE (catComplex)-[:SUCCEEDS]->(catCohesion) 
+
+MERGE (metCyc:Metric {name: 'Cyclomatic'}) 
+MERGE (metLines:Metric {name: 'LinesOfCode'}) 
+
+MERGE (metCyc)-[:MEASURES]->(catComplex) 
+MERGE (metLines)-[:MEASURES]->(catComplex) 
+
+// Liaison Category → Type via :IMPLEMENTS
+MERGE (catComplex)-[:IMPLEMENTS]->(typeMain) 
+MERGE (catCohesion)-[:IMPLEMENTS]->(typeUtil);

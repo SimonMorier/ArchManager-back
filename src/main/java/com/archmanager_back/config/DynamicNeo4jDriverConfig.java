@@ -1,7 +1,7 @@
 package com.archmanager_back.config;
 
 import com.archmanager_back.config.constant.AppProperties;
-import com.archmanager_back.model.entity.Project;
+import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.repository.jpa.ProjectRepository;
 
 import jakarta.servlet.http.HttpSession;

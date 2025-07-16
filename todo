@@ -1,19 +1,9 @@
-- Check deco et project switching
-- Refacto string validator
-- Changer nom du projet service
-  change bolt://localhost: occurence
-- input project name when creating
-- generate real jwt token secret
-- remove db http port in db
-  facto logs pour avoir user
-  -- faire un .env avec au moins les secrets
-  -- mdp neo4j, crypté ou pas ?
-- cleaning des commentaire en francais
-facto des erreurs (dto, differents handlers)
+change bolt://localhost: occurence
+-- faire un .env avec au moins les secrets
+-- mdp neo4j, crypté ou pas ?
+facto des erreurs (dto, differents handlers)ameliorer les erreur et centraliser 
+case sensible sur le validator de grpaheDTO. faire en sorte de formater automatiquemnt veres le truc attendu 
 
-  --main--
-  Permission controller
-  Decorallate sending of query and driver builder
-  Node entity noe4j
-  populate project
-  deconnexion 
+--main--
+Decorallate sending of query and driver builder
+controller pour user list, user par project
