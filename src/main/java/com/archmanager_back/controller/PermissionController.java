@@ -1,6 +1,5 @@
 package com.archmanager_back.controller;
 
-import com.archmanager_back.model.dto.PermissionDTO;
 import com.archmanager_back.model.dto.PermissionRequestDTO;
 import com.archmanager_back.service.PermissionService;
 import jakarta.validation.Valid;

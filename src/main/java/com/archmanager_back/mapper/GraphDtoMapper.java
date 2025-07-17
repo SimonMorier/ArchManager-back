@@ -3,43 +3,32 @@ package com.archmanager_back.mapper;
 
 import com.archmanager_back.model.dto.graph.GraphDTO;
 import com.archmanager_back.model.dto.graph.NodeDTO;
-import com.archmanager_back.model.entity.neo4j.GraphEntity;
-import com.archmanager_back.model.entity.neo4j.LinkEntity;
-import com.archmanager_back.model.entity.neo4j.NodeEntity;
 import com.archmanager_back.model.dto.graph.LinkDTO;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
-import java.util.Map;
-
-import org.mapstruct.*;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.archmanager_back.model.entity.neo4j.GraphEntity;
+import com.archmanager_back.model.entity.neo4j.NodeEntity;
+import com.archmanager_back.model.entity.neo4j.LinkEntity;
+import org.mapstruct.Mapper;
+import org.mapstruct.Mapping;
+import org.mapstruct.Mappings;
 
 @Mapper(componentModel = "spring")
-public abstract class GraphDtoMapper {
-
-    @Autowired
-    protected ObjectMapper objectMapper;
+public interface GraphDtoMapper {
 
     @Mappings({
+            @Mapping(target = "id", source = "entity.id"),
             @Mapping(target = "nodeType", expression = "java(entity.getLabels().isEmpty() ? null : entity.getLabels().get(0))"),
             @Mapping(target = "name", expression = "java(String.valueOf(entity.getProperties().getOrDefault(\"name\", \"\")))"),
             @Mapping(target = "description", expression = "java(String.valueOf(entity.getProperties().getOrDefault(\"description\", \"\")))"),
-            @Mapping(target = "rawProperties", expression = "java(serialize(entity.getProperties()))")
+            @Mapping(target = "rawProperties", expression = "java(String.valueOf(entity.getProperties().getOrDefault(\"rawProperties\", \"\")))")
     })
-    public abstract NodeDTO nodeEntityToDto(NodeEntity entity);
+    NodeDTO nodeEntityToDto(NodeEntity entity);
 
-    public abstract LinkDTO linkEntityToDto(LinkEntity entity);
+    @Mappings({
+            @Mapping(target = "source", source = "entity.source"),
+            @Mapping(target = "target", source = "entity.target"),
+            @Mapping(target = "relation", source = "entity.relation")
+    })
+    LinkDTO linkEntityToDto(LinkEntity entity);
 
-    @Mapping(source = "nodes", target = "nodes")
-    @Mapping(source = "links", target = "links")
-    public abstract GraphDTO graphEntityToDto(GraphEntity graph);
-
-    String serialize(Map<String, Object> props) {
-        try {
-            return objectMapper.writeValueAsString(props);
-        } catch (JsonProcessingException e) {
-            return "{}";
-        }
-    }
+    GraphDTO graphEntityToDto(GraphEntity graph);
 }

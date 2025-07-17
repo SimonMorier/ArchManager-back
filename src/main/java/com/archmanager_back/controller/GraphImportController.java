@@ -1,14 +1,15 @@
+// src/main/java/com/archmanager_back/controller/GraphImportController.java
 package com.archmanager_back.controller;
 
-import com.archmanager_back.model.domain.RoleEnum;
+import com.archmanager_back.model.dto.ImportResponseDTO;
 import com.archmanager_back.model.dto.graph.GraphDTO;
+import com.archmanager_back.model.domain.RoleEnum;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.model.entity.jpa.User;
 import com.archmanager_back.service.GraphImportService;
 import com.archmanager_back.service.ProjectService;
 import com.archmanager_back.validator.GraphDTOValidator;
 import com.archmanager_back.validator.PermissionValidator;
-
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,10 +31,26 @@ public class GraphImportController {
         private final HttpSession httpSession;
 
         @PostMapping
-        public ResponseEntity<String> importGraph(
+        public ResponseEntity<ImportResponseDTO> importGraph(
                         @AuthenticationPrincipal UserDetails user,
                         @Valid @RequestBody GraphDTO payload,
                         Errors errors) {
+
+                Long projectId = (Long) httpSession.getAttribute("currentProjectId");
+                if (projectId == null) {
+                        return ResponseEntity.badRequest().body(
+                                        ImportResponseDTO.builder()
+                                                        .success(false)
+                                                        .message("No project selected in session.")
+                                                        .projectSlug(null)
+                                                        .build());
+                }
+
+                Project proj = projectService.findById(projectId)
+                                .orElseThrow(() -> new IllegalArgumentException("Unknown project in session"));
+                User currentUser = projectService.findUserByUsername(user.getUsername())
+                                .orElseThrow(() -> new IllegalArgumentException("Unknown user"));
+                permissionValidator.requirePermission(currentUser, proj, RoleEnum.READ);
 
                 graphDTOValidator.validate(payload, errors);
                 if (errors.hasErrors()) {
@@ -41,23 +58,21 @@ public class GraphImportController {
                                         .map(e -> e.getDefaultMessage())
                                         .reduce((a, b) -> a + "; " + b)
                                         .orElse("Invalid graph payload");
-                        return ResponseEntity.badRequest().body(msg);
+                        return ResponseEntity.badRequest().body(
+                                        ImportResponseDTO.builder()
+                                                        .success(false)
+                                                        .message(msg)
+                                                        .projectSlug(proj.getSlug())
+                                                        .build());
                 }
-
-                Long projectId = (Long) httpSession.getAttribute("currentProjectId");
-                if (projectId == null) {
-                        return ResponseEntity.badRequest().body("No project selected in session.");
-                }
-
-                Project proj = projectService.findById(projectId)
-                                .orElseThrow(() -> new IllegalArgumentException("Unknown project in session"));
-
-                User currentUser = projectService.findUserByUsername(user.getUsername())
-                                .orElseThrow(() -> new IllegalArgumentException("Unknown user"));
-
-                permissionValidator.requirePermission(currentUser, proj, RoleEnum.READ);
 
                 importService.importGraph(payload);
-                return ResponseEntity.ok("Graph imported successfully.");
+
+                return ResponseEntity.ok(
+                                ImportResponseDTO.builder()
+                                                .success(true)
+                                                .message("Graph imported successfully.")
+                                                .projectSlug(proj.getSlug())
+                                                .build());
         }
 }

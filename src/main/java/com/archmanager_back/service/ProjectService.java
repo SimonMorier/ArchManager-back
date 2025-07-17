@@ -10,6 +10,7 @@ import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.model.entity.jpa.User;
 import com.archmanager_back.repository.jpa.ProjectRepository;
 import com.archmanager_back.repository.jpa.UserRepository;
+import com.archmanager_back.util.LogUtils;
 import com.archmanager_back.validator.PermissionValidator;
 import com.archmanager_back.validator.ProjectValidator;
 
@@ -57,7 +58,6 @@ public class ProjectService {
         p.setPassword(password);
         p.incrementSessions();
 
-        // Ajout permission ADMIN au créateur
         User creator = userRepo.findByUsernameWithPermissions(username)
                 .orElseThrow(() -> new NoSuchElementException(USER_NOT_FOUND));
         Permission perm = new Permission(creator, p, RoleEnum.ADMIN);
@@ -84,6 +84,7 @@ public class ProjectService {
         dockerService.ensureProjectRunning(project);
 
         project.incrementSessions();
+        log.debug(LogUtils.userPrefixed(" Connected to project {}"), project.getSlug());
         projectRepo.save(project);
 
         return project;

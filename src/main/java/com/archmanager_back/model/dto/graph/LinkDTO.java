@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LinkDTO {
-    private Long source; // maintenant un Long pour matcher id de NodeDTO
+    private Long source;
     private Long target;
     private String relation;
 }
