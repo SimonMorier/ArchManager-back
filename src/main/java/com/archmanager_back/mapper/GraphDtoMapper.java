@@ -1,4 +1,3 @@
-// src/main/java/com/archmanager_back/mapper/GraphDtoMapper.java
 package com.archmanager_back.mapper;
 
 import com.archmanager_back.model.dto.graph.GraphDTO;

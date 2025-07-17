@@ -1,7 +1,8 @@
 // src/main/java/com/archmanager_back/service/GraphImportService.java
 package com.archmanager_back.service;
 
-import com.archmanager_back.context.SessionNeo4jContext;
+import com.archmanager_back.context.Neo4jDriverRegistry;
+import com.archmanager_back.context.UserProjectRegistry;
 import com.archmanager_back.model.dto.graph.GraphDTO;
 import com.archmanager_back.model.dto.graph.LinkDTO;
 import com.archmanager_back.model.dto.graph.NodeDTO;
@@ -16,11 +17,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class GraphImportService {
 
-    private final SessionNeo4jContext sessionCtx;
+    private final UserProjectRegistry userProj;
+    private final Neo4jDriverRegistry driverReg;
 
-    public void importGraph(GraphDTO graph) {
-        try (Session session = sessionCtx.getDriver().session()) {
-            session.writeTransaction(tx -> {
+    public void importGraph(String username, GraphDTO graph) {
+        Long projectId = userProj.currentProjectId(username);
+
+        try (Session s = driverReg.getDriver(projectId).session()) {
+            s.writeTransaction(tx -> {
                 for (NodeDTO node : graph.getNodes()) {
                     Map<String, Object> props = Map.of(
                             "name", node.getName(),
@@ -28,22 +32,15 @@ public class GraphImportService {
                             "rawProperties", node.getRawProperties());
 
                     String cy = String.format(
-                            "MERGE (n:`%s` {id:$id}) " +
-                                    "SET n += $props",
-                            node.getNodeType());
+                            "MERGE (n:`%s` {id:$id}) SET n += $props", node.getNodeType());
                     tx.run(cy, Values.parameters("id", node.getId(), "props", props));
                 }
-
-                for (LinkDTO link : graph.getLinks()) {
+                for (LinkDTO l : graph.getLinks()) {
                     String cy = String.format(
-                            "MATCH (a {id:$src}), (b {id:$tgt}) " +
-                                    "MERGE (a)-[r:`%s`]->(b)",
-                            link.getRelation());
-                    tx.run(cy, Values.parameters(
-                            "src", link.getSource(),
-                            "tgt", link.getTarget()));
+                            "MATCH (a {id:$src}), (b {id:$tgt}) MERGE (a)-[r:`%s`]->(b)",
+                            l.getRelation());
+                    tx.run(cy, Values.parameters("src", l.getSource(), "tgt", l.getTarget()));
                 }
-
                 return null;
             });
         }

@@ -1,7 +1,6 @@
 package com.archmanager_back.service;
 
 import com.archmanager_back.config.constant.AppProperties;
-import com.archmanager_back.context.SessionNeo4jContext;
 import com.archmanager_back.model.domain.ContainerInstance;
 import com.archmanager_back.model.domain.RoleEnum;
 import com.archmanager_back.model.dto.ProjectDTO;
@@ -13,8 +12,6 @@ import com.archmanager_back.repository.jpa.UserRepository;
 import com.archmanager_back.util.LogUtils;
 import com.archmanager_back.validator.PermissionValidator;
 import com.archmanager_back.validator.ProjectValidator;
-
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -71,7 +68,7 @@ public class ProjectService {
     }
 
     @Transactional
-    public Project connectProject(String slug, String username) throws InterruptedException {
+    public ProjectDTO connectProject(String slug, String username) throws InterruptedException {
         projectValidator.validateConnectParams(slug, username);
 
         User user = userRepo.findByUsernameWithPermissions(username)
@@ -87,7 +84,8 @@ public class ProjectService {
         log.debug(LogUtils.userPrefixed(" Connected to project {}"), project.getSlug());
         projectRepo.save(project);
 
-        return project;
+        String boltUri = "bolt://localhost:" + project.getBoltPort();
+        return new ProjectDTO(project.getSlug(), boltUri);
     }
 
     @Transactional
@@ -105,31 +103,19 @@ public class ProjectService {
         return new ProjectDTO(p.getSlug(), "bolt://localhost:" + p.getBoltPort());
     }
 
-    public ProjectDTO connectProject(String slug, String username, HttpSession session, SessionNeo4jContext ctx)
-            throws InterruptedException {
-        Long previousProjectId = (Long) session.getAttribute("currentProjectId");
-        if (previousProjectId != null) {
-            disconnectProject(previousProjectId);
-        }
-        Project p = connectProject(slug, username);
-        session.setAttribute("currentProjectId", p.getId());
-        ctx.getDriver();
-        return new ProjectDTO(p.getSlug(), ctx.getUri());
-    }
-
-    public void disconnectProject(HttpSession session, SessionNeo4jContext ctx) {
-        Long projectId = (Long) session.getAttribute("currentProjectId");
-        if (projectId != null) {
-            disconnectProject(projectId);
-            session.removeAttribute("currentProjectId");
-            try {
-                if (ctx.getDriver() != null) {
-                    ctx.getDriver().close();
-                }
-            } catch (Exception ignored) {
-            }
-        }
-    }
+    // public void disconnectProject(HttpSession session, SessionNeo4jContext ctx) {
+    // Long projectId = (Long) session.getAttribute("currentProjectId");
+    // if (projectId != null) {
+    // disconnectProject(projectId);
+    // session.removeAttribute("currentProjectId");
+    // try {
+    // if (ctx.getDriver() != null) {
+    // ctx.getDriver().close();
+    // }
+    // } catch (Exception ignored) {
+    // }
+    // }
+    // }
 
     public Optional<Project> findBySlug(String slug) {
         return projectRepo.findBySlug(slug);
