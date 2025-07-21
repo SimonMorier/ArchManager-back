@@ -20,16 +20,18 @@ spring:
 
 app:
   docker:
-    host: "npipe:////./pipe/docker_engine"
+    engine-path: "npipe:////./pipe/docker_engine"
     neo4j-image: "neo4j:5.26-community"
     memory-limit: 4294967296 # 4GB
     passwordLength: 16
     volume-path: "/data"
+    host: "localhost:"
 
   neo4j:
     bolt-port: 7687
     http-port: 7474
     auth-url: "NEO4J_AUTH=neo4j/"
+    bolt-prefix: "bolt://"
 
   project:
     slug-prefix: "proj-"

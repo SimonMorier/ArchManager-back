@@ -16,4 +16,7 @@ public final class ErrorLabel {
     public static final String PASSWORD_TOO_SHORT = "Password must be at least 8 characters";
     public static final String REQUEST_BODY_NULL = "Request body must not be null";
 
+    public static final String RESOURCE_NOT_FOUND = "Resource not found :";
+    public static final String INVALID_AUTH_TOKEN = "Invalid or missing authentication token.";
+
 }

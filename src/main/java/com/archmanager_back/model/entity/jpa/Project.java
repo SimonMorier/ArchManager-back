@@ -82,7 +82,6 @@ public class Project {
         perm.setProject(null);
     }
 
-    // Conversion pour affichage ou logique métier
     public ZonedDateTime getLastActivityInNL() {
         return lastActivity != null ? lastActivity.atZone(ZoneId.of("Europe/Amsterdam")) : null;
     }

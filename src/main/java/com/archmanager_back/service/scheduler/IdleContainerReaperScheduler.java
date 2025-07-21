@@ -10,7 +10,7 @@ import org.springframework.stereotype.Service;
 import com.archmanager_back.config.constant.AppProperties;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.repository.jpa.ProjectRepository;
-import com.archmanager_back.service.DockerProjectService;
+import com.archmanager_back.service.project.DockerProjectService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

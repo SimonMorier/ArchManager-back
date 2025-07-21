@@ -12,7 +12,9 @@ import com.archmanager_back.security.JwtUtil;
 import com.archmanager_back.validator.UserValidator;
 import lombok.RequiredArgsConstructor;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -64,4 +66,27 @@ public class UserService {
     public Optional<User> findByUsername(String username) {
         return userRepository.findByUsername(username);
     }
+
+    public List<UserResponseDTO> getAllUsers() {
+        List<User> users = userRepository.findAll();
+        return users.stream()
+                .map(user -> {
+                    UserResponseDTO dto = userMapper.toResponseDto(user);
+                    dto.setPermissions(null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
+    public List<UserResponseDTO> getUsersByProjectName(String projectName) {
+        List<User> users = userRepository.findByProjectName(projectName);
+        return users.stream()
+                .map(user -> {
+                    UserResponseDTO dto = userMapper.toResponseDto(user);
+                    dto.setPermissions(null);
+                    return dto;
+                })
+                .collect(Collectors.toList());
+    }
+
 }

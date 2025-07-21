@@ -11,23 +11,22 @@ import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-
 @Configuration
 @AllArgsConstructor
 public class DockerConfig {
 
-private final AppProperties props;    
+    private final AppProperties props;
 
-@Bean
-public DockerClient dockerClient() {
-    DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
-        .withDockerHost(props.getDocker().getHost()) 
-        .build();
+    @Bean
+    public DockerClient dockerClient() {
+        DefaultDockerClientConfig config = DefaultDockerClientConfig.createDefaultConfigBuilder()
+                .withDockerHost(props.getDocker().getEnginePath())
+                .build();
 
-    ZerodepDockerHttpClient httpClient = new ZerodepDockerHttpClient.Builder()
-        .dockerHost(config.getDockerHost())
-        .build();
+        ZerodepDockerHttpClient httpClient = new ZerodepDockerHttpClient.Builder()
+                .dockerHost(config.getDockerHost())
+                .build();
 
-    return DockerClientImpl.getInstance(config, httpClient);
-  }
+        return DockerClientImpl.getInstance(config, httpClient);
+    }
 }

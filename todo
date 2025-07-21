@@ -1,13 +1,9 @@
-change bolt://localhost: occurence
 -- faire un .env avec au moins les secrets
 -- mdp neo4j, crypté ou pas ?
 facto des erreurs (dto, differents handlers)ameliorer les erreur et centraliser 
-case sensible sur le validator de grpaheDTO. faire en sorte de formater automatiquemnt veres le truc attendu 
 un utilisateur ne peux pas enlever ses propre perm 
-clean :         String body = "{\"error\":\"Invalid or missing authentication token.\"}";
-
+clean : disconnectProject
+clean comm fr + doc 
 
 --main--
-Decorallate sending of query and driver builder
 controller pour user list, user par project
-fix mapping obj graphe

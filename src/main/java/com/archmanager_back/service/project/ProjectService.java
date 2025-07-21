@@ -1,4 +1,4 @@
-package com.archmanager_back.service;
+package com.archmanager_back.service.project;
 
 import com.archmanager_back.config.constant.AppProperties;
 import com.archmanager_back.model.domain.ContainerInstance;
@@ -84,7 +84,7 @@ public class ProjectService {
         log.debug(LogUtils.userPrefixed(" Connected to project {}"), project.getSlug());
         projectRepo.save(project);
 
-        String boltUri = "bolt://localhost:" + project.getBoltPort();
+        String boltUri = props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + project.getBoltPort();
         return new ProjectDTO(project.getSlug(), boltUri);
     }
 
@@ -100,7 +100,8 @@ public class ProjectService {
     public ProjectDTO createProject(String name) throws InterruptedException {
         String username = getCurrentUsername();
         Project p = createAndStart(name, username);
-        return new ProjectDTO(p.getSlug(), "bolt://localhost:" + p.getBoltPort());
+        return new ProjectDTO(p.getSlug(),
+                props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + p.getBoltPort());
     }
 
     // public void disconnectProject(HttpSession session, SessionNeo4jContext ctx) {

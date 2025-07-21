@@ -6,6 +6,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
+import static com.archmanager_back.config.constant.ErrorLabel.INVALID_AUTH_TOKEN;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -20,7 +22,7 @@ public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         response.setContentType("application/json");
 
-        String body = "{\"error\":\"Invalid or missing authentication token.\"}";
+        String body = "{\"error\":\"" + INVALID_AUTH_TOKEN + "\"}";
         try (PrintWriter writer = response.getWriter()) {
             writer.write(body);
         }

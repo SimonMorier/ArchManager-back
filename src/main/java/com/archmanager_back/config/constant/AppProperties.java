@@ -18,11 +18,13 @@ public class AppProperties {
 
     @Data
     public static class Docker {
-        private String host;
+        private String enginePath;
         private String neo4jImage;
         private Long memoryLimit;
         private int passwordLength;
         private String volumePath;
+        private String host;
+
     }
 
     @Data
@@ -30,6 +32,7 @@ public class AppProperties {
         private int boltPort;
         private int httpPort;
         private String authUrl;
+        private String boltPrefix;
     }
 
     @Data

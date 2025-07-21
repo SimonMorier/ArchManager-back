@@ -2,7 +2,8 @@ package com.archmanager_back.controller;
 
 import com.archmanager_back.context.UserProjectRegistry;
 import com.archmanager_back.model.dto.ProjectDTO;
-import com.archmanager_back.service.ProjectService;
+import com.archmanager_back.service.project.ProjectService;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,7 +22,6 @@ public class ProjectController {
     private final ProjectService projectService;
     private final UserProjectRegistry userProjectRegistry;
 
-    /* ------------ 1. Création -------------- */
     @PostMapping("/{name}")
     public ResponseEntity<ProjectDTO> createProject(@PathVariable String name) {
         try {
@@ -57,7 +57,6 @@ public class ProjectController {
         }
     }
 
-    /* ------------ 3. Déconnexion ------------ */
     @PostMapping("/{slug}/disconnect")
     public ResponseEntity<Void> disconnectProject(@PathVariable String slug,
             @AuthenticationPrincipal UserDetails user) {

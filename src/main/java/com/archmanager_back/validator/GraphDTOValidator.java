@@ -32,12 +32,26 @@ public class GraphDTOValidator implements Validator {
         return GraphDTO.class.isAssignableFrom(clazz);
     }
 
+    public void format(GraphDTO graph) {
+        graph.getNodes().forEach(node -> {
+            String name = node.getName();
+            if (name != null && !name.isEmpty()) {
+                node.setName(name.substring(0, 1).toUpperCase() + name.substring(1));
+            }
+        });
+        graph.getLinks().forEach(link -> {
+            String rel = link.getRelation();
+            if (rel != null && !rel.isEmpty()) {
+                link.setRelation(rel.toUpperCase());
+            }
+        });
+    }
+
     @Override
     public void validate(Object target, Errors errors) {
         GraphDTO graph = (GraphDTO) target;
         log.debug("Validating GraphDTO with {} nodes and {} links", graph.getNodes().size(), graph.getLinks().size());
 
-        // Validate nodes
         for (int i = 0; i < graph.getNodes().size(); i++) {
             NodeDTO node = graph.getNodes().get(i);
             if (!validNodeTypes.contains(node.getNodeType())) {
@@ -50,7 +64,6 @@ public class GraphDTOValidator implements Validator {
             }
         }
 
-        // Validate links
         for (int j = 0; j < graph.getLinks().size(); j++) {
             LinkDTO link = graph.getLinks().get(j);
             if (!validRelations.contains(link.getRelation())) {

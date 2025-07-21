@@ -1,4 +1,3 @@
-// src/main/java/com/archmanager_back/controller/GraphImportController.java
 package com.archmanager_back.controller;
 
 import com.archmanager_back.model.dto.ImportResponseDTO;
@@ -6,8 +5,8 @@ import com.archmanager_back.model.dto.graph.GraphDTO;
 import com.archmanager_back.model.domain.RoleEnum;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.context.UserProjectRegistry;
-import com.archmanager_back.service.GraphImportService;
-import com.archmanager_back.service.ProjectService;
+import com.archmanager_back.service.graph.GraphImportService;
+import com.archmanager_back.service.project.ProjectService;
 import com.archmanager_back.validator.GraphDTOValidator;
 import com.archmanager_back.validator.PermissionValidator;
 import jakarta.validation.Valid;
@@ -19,7 +18,7 @@ import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/projects/graph") // plus de {slug}
+@RequestMapping("/api/projects/graph")
 @RequiredArgsConstructor
 public class GraphImportController {
 
@@ -34,15 +33,13 @@ public class GraphImportController {
                         @Valid @RequestBody GraphDTO payload,
                         Errors errors) {
 
-                /* 1️⃣ Récupère le projet actif de l'utilisateur */
+                validator.format(payload);
                 Long projectId = userProj.currentProjectId(user.getUsername());
                 Project project = projectSvc.findById(projectId)
                                 .orElseThrow(() -> new IllegalStateException("Project not found"));
 
-                /* 2️⃣ Vérifie les droits */
                 permVal.requirePermission(user, project, RoleEnum.EDIT);
 
-                /* 3️⃣ Valide le payload */
                 validator.validate(payload, errors);
                 if (errors.hasErrors()) {
                         String msg = errors.getAllErrors().stream()
@@ -57,10 +54,8 @@ public class GraphImportController {
                                                         .build());
                 }
 
-                /* 4️⃣ Import */
                 importSvc.importGraph(user.getUsername(), payload);
 
-                /* 5️⃣ Réponse */
                 return ResponseEntity.ok(
                                 ImportResponseDTO.builder()
                                                 .success(true)

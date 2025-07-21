@@ -1,11 +1,12 @@
 // src/main/java/com/archmanager_back/service/DockerProjectService.java
-package com.archmanager_back.service;
+package com.archmanager_back.service.project;
 
 import com.archmanager_back.config.constant.AppProperties;
 import com.archmanager_back.config.constant.DockerHealthConstants;
 import com.archmanager_back.model.domain.ContainerInstance;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.repository.jpa.ProjectRepository;
+import com.archmanager_back.util.LogUtils;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectContainerResponse;
@@ -82,7 +83,7 @@ public class DockerProjectService {
      */
     public void ensureProjectRunning(Project project) throws InterruptedException {
         String id = project.getContainerId();
-        log.debug("Container {} check to connect", project.getSlug());
+        log.debug(LogUtils.userPrefixed("Container {} check to connect"), project.getSlug());
         InspectContainerResponse preInfo = docker.inspectContainerCmd(id).exec();
         if (preInfo.getState().getRunning()) {
             syncPortFromContainer(project, preInfo);
