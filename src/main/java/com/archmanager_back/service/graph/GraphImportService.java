@@ -24,4 +24,14 @@ public class GraphImportService {
             });
         }
     }
+
+    public void deleteGraph(String username) {
+        try (Session session = neo4jProvider.sessionFor(username)) {
+            session.writeTransaction(tx -> {
+                dataImporter.deleteGraph(tx);
+                return null;
+            });
+        }
+    }
+
 }

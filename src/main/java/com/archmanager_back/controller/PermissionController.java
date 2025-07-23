@@ -17,11 +17,6 @@ public class PermissionController {
 
         private final PermissionService permissionService;
 
-        /**
-         * POST /api/permissions
-         * Body JSON { projectSlug, username, role }
-         * Seuls les ADMIN du projet peuvent accorder un droit.
-         */
         @PostMapping
         @Transactional
         public ResponseEntity<PermissionRequestDTO> grantPermission(
@@ -29,5 +24,14 @@ public class PermissionController {
                         @Valid @RequestBody PermissionRequestDTO req) {
                 PermissionRequestDTO resp = permissionService.grantPermission(currentUser.getUsername(), req);
                 return ResponseEntity.ok(resp);
+        }
+
+        @DeleteMapping
+        @Transactional
+        public ResponseEntity<Void> revokePermission(
+                        @AuthenticationPrincipal UserDetails currentUser,
+                        @Valid @RequestBody PermissionRequestDTO req) {
+                permissionService.revokePermission(currentUser.getUsername(), req);
+                return ResponseEntity.noContent().build();
         }
 }

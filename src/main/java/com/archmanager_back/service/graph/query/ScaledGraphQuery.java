@@ -20,13 +20,6 @@ public class ScaledGraphQuery {
     private final GraphRowMapper rowMapper;
     private final GraphComposer composer;
 
-    /**
-     * @param level      niveau de composition cible (Type, File, Scope, …)
-     * @param hops       nombre de niveaux à remonter (>=1)
-     * @param strategy   PHYSICAL ou LOGICAL
-     * @param extraTypes nœuds à préserver tels quels (Dimension, Category, Metric…)
-     * @return un CypherQuery prêt à être passé à l’exécuteur
-     */
     public CypherQuery<GraphEntity> withParams(NodeTypeEnum level,
             int hops,
             ScaleStrategy strategy,
@@ -52,12 +45,10 @@ public class ScaledGraphQuery {
                 NodeEntity n = composer.climb(client, n0, level, hops, strategy, extra);
                 NodeEntity m = composer.climb(client, m0, level, hops, strategy, extra);
 
-                // on ne garde que les nœuds montés avec succès
                 if (n == null || m == null)
                     continue;
 
                 String key = n.getId() + "->" + m.getId() + "|" + row.get("rtype");
-                // pas d’auto-lien ; pas de doublon
                 if (n.getId() != m.getId() && linkSeen.add(key)) {
                     links.add(new LinkEntity(n.getId(), m.getId(), (String) row.get("rtype")));
                 }

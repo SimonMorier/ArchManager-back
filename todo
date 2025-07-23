@@ -1,9 +1,0 @@
--- faire un .env avec au moins les secrets
--- mdp neo4j, crypté ou pas ?
-facto des erreurs (dto, differents handlers)ameliorer les erreur et centraliser 
-un utilisateur ne peux pas enlever ses propre perm 
-clean : disconnectProject
-clean comm fr + doc 
-
---main--
-controller pour user list, user par project

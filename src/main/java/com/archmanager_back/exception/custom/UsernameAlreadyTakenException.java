@@ -1,4 +1,4 @@
-package com.archmanager_back.exception;
+package com.archmanager_back.exception.custom;
 
 public class UsernameAlreadyTakenException extends RuntimeException {
     public UsernameAlreadyTakenException(String username) {

@@ -5,7 +5,7 @@ import static com.archmanager_back.config.constant.ErrorLabel.PASSWORD_TOO_SHORT
 import static com.archmanager_back.config.constant.ErrorLabel.REQUEST_BODY_NULL;
 import static com.archmanager_back.config.constant.ErrorLabel.USERNAME_EMPTY;
 
-import com.archmanager_back.exception.UserValidationException;
+import com.archmanager_back.exception.custom.UserValidationException;
 import com.archmanager_back.model.dto.UserRequestDTO;
 
 public final class UserValidator {

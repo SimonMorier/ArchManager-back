@@ -1,7 +1,7 @@
 package com.archmanager_back.service;
 
-import com.archmanager_back.exception.InvalidCredentialsException;
-import com.archmanager_back.exception.UsernameAlreadyTakenException;
+import com.archmanager_back.exception.custom.InvalidCredentialsException;
+import com.archmanager_back.exception.custom.UsernameAlreadyTakenException;
 import com.archmanager_back.mapper.UserMapper;
 import com.archmanager_back.model.dto.AuthResponseDTO;
 import com.archmanager_back.model.dto.UserRequestDTO;
@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -87,6 +88,24 @@ public class UserService {
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    public void deleteUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        userRepository.delete(user);
+    }
+
+    public UserResponseDTO updateUser(String username, UserRequestDTO req) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new UsernameNotFoundException(username));
+        user.setFirstname(req.getFirstname());
+        user.setLastname(req.getLastname());
+        if (req.getPassword() != null && !req.getPassword().isBlank()) {
+            user.setPassword(passwordEncoder.encode(req.getPassword()));
+        }
+        User saved = userRepository.save(user);
+        return userMapper.toResponseDto(saved);
     }
 
 }

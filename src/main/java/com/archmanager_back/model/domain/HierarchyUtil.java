@@ -21,14 +21,31 @@ public final class HierarchyUtil {
     private HierarchyUtil() {
     }
 
-    /**
-     * Returns the *direct* parent type for the requested strategy,
-     * or {@code null} if we are already at the root.
-     */
     public static NodeTypeEnum parentOf(NodeTypeEnum kind, ScaleStrategy strat) {
         return switch (strat) {
             case PHYSICAL -> PHYSICAL.get(kind);
             case LOGICAL -> LOGICAL.get(kind);
+        };
+    }
+
+    public static int rank(NodeTypeEnum kind, ScaleStrategy strat) {
+        return switch (strat) {
+            case PHYSICAL -> switch (kind) {
+                case Variable -> 0;
+                case Operation -> 1;
+                case Type -> 2;
+                case File -> 3;
+                case Folder -> 4;
+                case Project -> 5;
+                default -> 99;
+            };
+            case LOGICAL -> switch (kind) {
+                case Variable -> 0;
+                case Operation -> 1;
+                case Type -> 2;
+                case Scope -> 3;
+                default -> 99;
+            };
         };
     }
 }

@@ -21,8 +21,15 @@ public interface UserRepository extends JpaRepository<User, Long> {
       """)
   Optional<User> findByUsernameWithPermissions(@Param("username") String username);
 
-  Optional<User> findByUsername(String username);
+  @Query("""
+      SELECT DISTINCT u
+        FROM User u
+        JOIN u.permissions perm
+        JOIN perm.project p
+       WHERE p.name = :projectName
+      """)
+  List<User> findByProjectName(@Param("projectName") String projectName);
 
-  List<User> findByProjectName(String projectName);
+  Optional<User> findByUsername(String username);
 
 }

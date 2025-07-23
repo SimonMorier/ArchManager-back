@@ -67,3 +67,12 @@ logging:
       %clr([%thread]){faint} 
       %clr(%-40.40logger{39}){blue} : 
       %msg%n%wEx
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enable: true
+  show-actuator: true
+  packages-to-scan: com.archmanager_back.controller

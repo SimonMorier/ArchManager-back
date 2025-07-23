@@ -1,4 +1,4 @@
-// ─────────────────────────────────────────────────────────────────────────────
+x─────────────────────────────────────────────────────────────────────────────
 // 1) Projet
 // ─────────────────────────────────────────────────────────────────────────────
 MERGE (proj:Project {slug: 'proj-001'})
@@ -131,3 +131,153 @@ MERGE (metLines)-[:MEASURES]->(catComplex)
 // Liaison Category → Type via :IMPLEMENTS
 MERGE (catComplex)-[:IMPLEMENTS]->(typeMain) 
 MERGE (catCohesion)-[:IMPLEMENTS]->(typeUtil);
+
+
+
+
+
+
+
+
+
+
+{
+  "nodes": [
+    { "id": 1,  "nodeType": "Project",   "name": "proj-001",               "description": "", "rawProperties": "" },
+    { "id": 2,  "nodeType": "Folder",    "name": "/src",                   "description": "", "rawProperties": "" },
+    { "id": 3,  "nodeType": "Folder",    "name": "/tests",                 "description": "", "rawProperties": "" },
+    { "id": 4,  "nodeType": "Folder",    "name": "/docs",                  "description": "", "rawProperties": "" },
+    { "id": 5,  "nodeType": "Folder",    "name": "/src/utils",             "description": "", "rawProperties": "" },
+
+    { "id": 6,  "nodeType": "File",      "name": "/src/Main.java",         "description": "", "rawProperties": "" },
+    { "id": 7,  "nodeType": "File",      "name": "/src/utils/Utils.java",  "description": "", "rawProperties": "" },
+    { "id": 8,  "nodeType": "File",      "name": "/tests/MainTest.java",   "description": "", "rawProperties": "" },
+
+    { "id": 9,  "nodeType": "Type",      "name": "com.example.Main",       "description": "", "rawProperties": "" },
+    { "id": 10, "nodeType": "Type",      "name": "com.example.utils.Utils","description": "", "rawProperties": "" },
+    { "id": 11, "nodeType": "Type",      "name": "com.example.MainTest",   "description": "", "rawProperties": "" },
+    { "id": 12, "nodeType": "Type",      "name": "void",                   "description": "", "rawProperties": "" },
+    { "id": 13, "nodeType": "Type",      "name": "java.lang.String[]",     "description": "", "rawProperties": "" },
+
+    { "id": 14, "nodeType": "Scope",     "name": "com.example",            "description": "", "rawProperties": "" },
+    { "id": 15, "nodeType": "Scope",     "name": "com.example.tests",      "description": "", "rawProperties": "" },
+
+    { "id": 16, "nodeType": "Operation", "name": "void Main.main(String[])",   "description": "", "rawProperties": "" },
+    { "id": 17, "nodeType": "Operation", "name": "String Utils.helper()",      "description": "", "rawProperties": "" },
+    { "id": 18, "nodeType": "Operation", "name": "void MainTest.testMain()",   "description": "", "rawProperties": "" },
+
+    { "id": 19, "nodeType": "Variable",  "name": "args",                   "description": "", "rawProperties": "" },
+    { "id": 20, "nodeType": "Variable",  "name": "count",                  "description": "", "rawProperties": "" },
+
+    { "id": 21, "nodeType": "Dimension", "name": "Performance",            "description": "", "rawProperties": "" },
+    { "id": 22, "nodeType": "Dimension", "name": "Maintainability",        "description": "", "rawProperties": "" },
+
+    { "id": 23, "nodeType": "Category",  "name": "Complexity",             "description": "", "rawProperties": "" },
+    { "id": 24, "nodeType": "Category",  "name": "Cohesion",               "description": "", "rawProperties": "" },
+
+    { "id": 25, "nodeType": "Metric",    "name": "Cyclomatic",             "description": "", "rawProperties": "" },
+    { "id": 26, "nodeType": "Metric",    "name": "LinesOfCode",            "description": "", "rawProperties": "" }
+  ],
+  "links": [
+    { "source": 1,  "target": 2,  "relation": "INCLUDES" },
+    { "source": 1,  "target": 3,  "relation": "INCLUDES" },
+    { "source": 1,  "target": 4,  "relation": "INCLUDES" },
+
+    { "source": 2,  "target": 4,  "relation": "CONTAINS" },
+    { "source": 2,  "target": 5,  "relation": "CONTAINS" },
+
+    { "source": 2,  "target": 6,  "relation": "CONTAINS" },
+    { "source": 5,  "target": 7,  "relation": "CONTAINS" },
+    { "source": 3,  "target": 8,  "relation": "CONTAINS" },
+
+    { "source": 6,  "target": 7,  "relation": "REQUIRES" },
+    { "source": 8,  "target": 6,  "relation": "REQUIRES" },
+
+    { "source": 6,  "target": 9,  "relation": "DECLARES" },
+    { "source": 7,  "target": 10, "relation": "DECLARES" },
+    { "source": 8,  "target": 11, "relation": "DECLARES" },
+
+    { "source": 14, "target": 9,  "relation": "ENCLOSES" },
+    { "source": 14, "target": 10, "relation": "ENCLOSES" },
+    { "source": 15, "target": 11, "relation": "ENCLOSES" },
+
+    { "source": 11, "target": 9,  "relation": "SPECIALIZES" },
+
+    { "source": 9,  "target": 16, "relation": "ENCAPSULATES" },
+    { "source": 10, "target": 17, "relation": "ENCAPSULATES" },
+    { "source": 11, "target": 18, "relation": "ENCAPSULATES" },
+
+    { "source": 16, "target": 12, "relation": "RETURNS" },
+    { "source": 17, "target": 10, "relation": "RETURNS" },
+    { "source": 18, "target": 12, "relation": "RETURNS" },
+    { "source": 16, "target": 13, "relation": "INSTANTIATES" },
+
+    { "source": 16, "target": 17, "relation": "INVOKES" },
+    { "source": 18, "target": 16, "relation": "INVOKES" },
+
+    { "source": 19, "target": 13, "relation": "TYPED" },
+    { "source": 20, "target": 12, "relation": "TYPED" },
+    { "source": 19, "target": 16, "relation": "PARAMETERIZES" },
+    { "source": 20, "target": 17, "relation": "PARAMETERIZES" },
+    { "source": 16, "target": 19, "relation": "USES" },
+
+    { "source": 23, "target": 22, "relation": "COMPOSES" },
+    { "source": 24, "target": 22, "relation": "COMPOSES" },
+
+    { "source": 24, "target": 23, "relation": "REFINES" },
+    { "source": 23, "target": 24, "relation": "SUCCEEDS" },
+
+    { "source": 25, "target": 23, "relation": "MEASURES" },
+    { "source": 26, "target": 23, "relation": "MEASURES" },
+
+    { "source": 23, "target": 9,  "relation": "IMPLEMENTS" },
+    { "source": 24, "target": 10, "relation": "IMPLEMENTS" }
+  ]
+}
+
+
+{
+  "nodes": [
+    { "id": 1, "nodeType": "Scope",     "name": "com.demo",          "description": "", "rawProperties": "" },
+
+    { "id": 2, "nodeType": "Type",      "name": "com.demo.Foo",      "description": "", "rawProperties": "" },
+    { "id": 3, "nodeType": "Type",      "name": "com.demo.Bar",      "description": "", "rawProperties": "" },
+
+    { "id": 4, "nodeType": "Operation", "name": "void Foo.doFoo()",  "description": "", "rawProperties": "" },
+    { "id": 5, "nodeType": "Operation", "name": "void Bar.doBar()",  "description": "", "rawProperties": "" }
+  ],
+
+  "links": [
+   
+    { "source": 1, "target": 2, "relation": "ENCLOSES" },
+    { "source": 1, "target": 3, "relation": "ENCLOSES" },
+
+    { "source": 2, "target": 4, "relation": "ENCAPSULATES" },
+    { "source": 3, "target": 5, "relation": "ENCAPSULATES" },
+
+    { "source": 4, "target": 5, "relation": "INVOKES" }
+  ]
+}
+
+
+{
+  "nodes": [
+    { "id": 1, "nodeType": "Scope",     "name": "com.demo",          "description": "","rawProperties": ""  },
+    { "id": 2, "nodeType": "Scope",     "name": "com.demo.internal", "description": "","rawProperties": "" },
+
+    { "id": 3, "nodeType": "Type",      "name": "com.demo.Foo",      "description": "" ,"rawProperties": ""},
+    { "id": 4, "nodeType": "Type",      "name": "com.demo.internal.Bar", "description": "","rawProperties": "" },
+
+    { "id": 5, "nodeType": "Operation", "name": "void Foo.doFoo()",  "description": "","rawProperties": "" },
+    { "id": 6, "nodeType": "Operation", "name": "void Bar.doBar()",  "description": "","rawProperties": "" }
+  ],
+  "links": [
+    { "source": 1, "target": 3, "relation": "ENCLOSES" },
+    { "source": 2, "target": 4, "relation": "ENCLOSES" },
+
+    { "source": 3, "target": 5, "relation": "ENCAPSULATES" },
+    { "source": 4, "target": 6, "relation": "ENCAPSULATES" },
+
+    { "source": 5, "target": 6, "relation": "INVOKES" }
+  ]
+}

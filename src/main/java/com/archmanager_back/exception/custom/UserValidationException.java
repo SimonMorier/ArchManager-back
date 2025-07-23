@@ -1,4 +1,4 @@
-package com.archmanager_back.exception;
+package com.archmanager_back.exception.custom;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;

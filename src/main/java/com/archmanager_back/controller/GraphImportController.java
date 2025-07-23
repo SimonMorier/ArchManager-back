@@ -33,13 +33,12 @@ public class GraphImportController {
                         @Valid @RequestBody GraphDTO payload,
                         Errors errors) {
 
-                validator.format(payload);
                 Long projectId = userProj.currentProjectId(user.getUsername());
                 Project project = projectSvc.findById(projectId)
                                 .orElseThrow(() -> new IllegalStateException("Project not found"));
 
                 permVal.requirePermission(user, project, RoleEnum.EDIT);
-
+                validator.format(payload);
                 validator.validate(payload, errors);
                 if (errors.hasErrors()) {
                         String msg = errors.getAllErrors().stream()
@@ -62,5 +61,19 @@ public class GraphImportController {
                                                 .message("Graph imported successfully.")
                                                 .projectSlug(project.getSlug())
                                                 .build());
+        }
+
+        @DeleteMapping
+        public ResponseEntity<Void> deleteGraph(
+                        @AuthenticationPrincipal UserDetails user) {
+
+                Long projectId = userProj.currentProjectId(user.getUsername());
+                Project project = projectSvc.findById(projectId)
+                                .orElseThrow(() -> new IllegalStateException("Project not found"));
+
+                permVal.requirePermission(user, project, RoleEnum.EDIT);
+                importSvc.deleteGraph(user.getUsername());
+
+                return ResponseEntity.noContent().build();
         }
 }

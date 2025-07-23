@@ -5,9 +5,7 @@ import com.archmanager_back.model.dto.ProjectDTO;
 import com.archmanager_back.service.project.ProjectService;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -23,42 +21,28 @@ public class ProjectController {
     private final UserProjectRegistry userProjectRegistry;
 
     @PostMapping("/{name}")
-    public ResponseEntity<ProjectDTO> createProject(@PathVariable String name) {
-        try {
-            return ResponseEntity.ok(projectService.createProject(name));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        }
+    public ResponseEntity<ProjectDTO> createProject(@PathVariable String name)
+            throws InterruptedException {
+        ProjectDTO dto = projectService.createProject(name);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/{slug}/connect")
     public ResponseEntity<ProjectDTO> connectProject(
             @PathVariable String slug,
-            @AuthenticationPrincipal UserDetails user) {
-        try {
-            ProjectDTO dto = projectService.connectProject(slug, user.getUsername());
+            @AuthenticationPrincipal UserDetails user) throws InterruptedException {
 
-            Long projectId = projectService.findBySlug(slug)
-                    .orElseThrow(() -> new NoSuchElementException("Unknown project: " + slug))
-                    .getId();
-
-            userProjectRegistry.connect(user.getUsername(), projectId);
-
-            return ResponseEntity.ok(dto);
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-        } catch (AccessDeniedException ade) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        } catch (NoSuchElementException nse) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
-        }
+        ProjectDTO dto = projectService.connectProject(slug, user.getUsername());
+        Long projectId = projectService.findBySlug(slug)
+                .orElseThrow(() -> new NoSuchElementException("Unknown project: " + slug))
+                .getId();
+        userProjectRegistry.connect(user.getUsername(), projectId);
+        return ResponseEntity.ok(dto);
     }
 
     @PostMapping("/{slug}/disconnect")
-    public ResponseEntity<Void> disconnectProject(@PathVariable String slug,
+    public ResponseEntity<Void> disconnectProject(
+            @PathVariable String slug,
             @AuthenticationPrincipal UserDetails user) {
 
         Long projectId = projectService.findBySlug(slug)
@@ -67,6 +51,28 @@ public class ProjectController {
 
         projectService.disconnectProject(projectId);
         userProjectRegistry.disconnect(user.getUsername());
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{slug}")
+    public ResponseEntity<ProjectDTO> renameProject(
+            @PathVariable String slug,
+            @RequestParam("name") String newName,
+            @AuthenticationPrincipal UserDetails user)
+            throws InterruptedException {
+
+        ProjectDTO updated = projectService.updateProjectName(
+                slug, newName, user.getUsername());
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/{slug}")
+    public ResponseEntity<Void> deleteProject(
+            @PathVariable String slug,
+            @AuthenticationPrincipal UserDetails user)
+            throws InterruptedException {
+
+        projectService.deleteProject(slug, user.getUsername());
         return ResponseEntity.noContent().build();
     }
 }

@@ -11,9 +11,6 @@ import org.springframework.stereotype.Component;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * projectId -> Driver. Un seul driver par projet, partagé.
- */
 @Component
 @Slf4j
 @RequiredArgsConstructor
@@ -39,7 +36,6 @@ public class Neo4jDriverRegistry {
                 Config.builder().withMaxConnectionPoolSize(10).build());
     }
 
-    /** Optionnel : fermer toutes les connexions lors d’un shutdown graceful. */
     public void closeAll() {
         drivers.values().forEach(Driver::close);
         drivers.clear();

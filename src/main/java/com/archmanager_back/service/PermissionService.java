@@ -1,15 +1,19 @@
 package com.archmanager_back.service;
 
 import com.archmanager_back.model.domain.RoleEnum;
-import com.archmanager_back.model.dto.PermissionDTO;
 import com.archmanager_back.model.dto.PermissionRequestDTO;
 import com.archmanager_back.model.entity.jpa.Permission;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.model.entity.jpa.User;
+import com.archmanager_back.repository.jpa.PermissionRepository;
 import com.archmanager_back.repository.jpa.ProjectRepository;
 import com.archmanager_back.repository.jpa.UserRepository;
 import com.archmanager_back.validator.PermissionValidator;
+
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +25,7 @@ public class PermissionService {
 
     private final ProjectRepository projectRepo;
     private final UserRepository userRepo;
+    private final PermissionRepository permissionRepo;
     private final PermissionValidator permissionValidator;
 
     private User getUserWithPermissions(String username) {
@@ -50,5 +55,20 @@ public class PermissionService {
         dto.setProjectSlug(perm.getProject().getSlug());
         dto.setRole(perm.getRole());
         return dto;
+    }
+
+    public void revokePermission(String adminUsername, PermissionRequestDTO req) {
+        boolean isAdmin = permissionRepo.existsByProjectSlugAndUsernameAndRole(
+                req.getProjectSlug(), adminUsername, RoleEnum.ADMIN);
+        if (!isAdmin) {
+            throw new AccessDeniedException("Only ADMIN can revoke permissions");
+        }
+
+        Permission perm = permissionRepo
+                .findByProjectSlugAndUsernameAndRole(
+                        req.getProjectSlug(), req.getUsername(), req.getRole())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "Permission introuvable pour " + req.getUsername()));
+        permissionRepo.delete(perm);
     }
 }

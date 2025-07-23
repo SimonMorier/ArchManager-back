@@ -1,7 +1,7 @@
 package com.archmanager_back.validator;
 
 import com.archmanager_back.config.constant.ErrorLabel;
-import com.archmanager_back.exception.InsufficientPermissionException;
+import com.archmanager_back.exception.custom.InsufficientPermissionException;
 import com.archmanager_back.model.domain.RoleEnum;
 import com.archmanager_back.model.entity.jpa.Permission;
 import com.archmanager_back.model.entity.jpa.Project;
@@ -19,11 +19,6 @@ public class PermissionValidator {
     private final PermissionRepository permRepo;
     private final UserRepository userRepo;
 
-    /**
-     * Vérifie que l'utilisateur possède au moins minRole sur le projet.
-     * 
-     * @throws InsufficientPermissionException si rôle insuffisant ou absent.
-     */
     public void requirePermission(UserDetails userDetails, Project project, RoleEnum minRole) {
 
         User user = userRepo.findByUsernameWithPermissions(userDetails.getUsername())
@@ -40,9 +35,6 @@ public class PermissionValidator {
         }
     }
 
-    /**
-     * Ancienne méthode, si jamais vous en avez besoin directement.
-     */
     public Permission requirePermission(User user, Project project, RoleEnum minRole) {
         Permission perm = permRepo
                 .findByUserIdAndProjectId(user.getId(), project.getId())

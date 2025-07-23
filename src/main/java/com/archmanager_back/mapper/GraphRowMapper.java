@@ -29,7 +29,7 @@ public class GraphRowMapper {
 
     @SuppressWarnings("unchecked")
     public NodeEntity toNode(Map<String, Object> row,
-            String prefix /* "" ou "n" / "m" */) {
+            String prefix) {
 
         NodeEntity n = new NodeEntity();
         n.setId(((Number) row.get(prefix + "id")).longValue());

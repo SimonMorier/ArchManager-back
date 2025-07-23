@@ -7,6 +7,7 @@ import com.archmanager_back.model.dto.ProjectDTO;
 import com.archmanager_back.model.entity.jpa.Permission;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.model.entity.jpa.User;
+import com.archmanager_back.repository.jpa.PermissionRepository;
 import com.archmanager_back.repository.jpa.ProjectRepository;
 import com.archmanager_back.repository.jpa.UserRepository;
 import com.archmanager_back.util.LogUtils;
@@ -14,6 +15,8 @@ import com.archmanager_back.validator.PermissionValidator;
 import com.archmanager_back.validator.ProjectValidator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -32,6 +35,7 @@ public class ProjectService {
     private final AppProperties props;
     private final ProjectRepository projectRepo;
     private final UserRepository userRepo;
+    private final PermissionRepository permissionRepo;
     private final ProjectValidator projectValidator;
     private final PermissionValidator permissionValidator;
     private final DockerProjectService dockerService;
@@ -104,20 +108,6 @@ public class ProjectService {
                 props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + p.getBoltPort());
     }
 
-    // public void disconnectProject(HttpSession session, SessionNeo4jContext ctx) {
-    // Long projectId = (Long) session.getAttribute("currentProjectId");
-    // if (projectId != null) {
-    // disconnectProject(projectId);
-    // session.removeAttribute("currentProjectId");
-    // try {
-    // if (ctx.getDriver() != null) {
-    // ctx.getDriver().close();
-    // }
-    // } catch (Exception ignored) {
-    // }
-    // }
-    // }
-
     public Optional<Project> findBySlug(String slug) {
         return projectRepo.findBySlug(slug);
     }
@@ -137,4 +127,44 @@ public class ProjectService {
         }
         throw new IllegalStateException("No authenticated user found in security context");
     }
+
+    public ProjectDTO updateProjectName(String slug, String newName, String username)
+            throws InterruptedException {
+        Project proj = projectRepo.findBySlug(slug)
+                .orElseThrow(() -> new NoSuchElementException("Project not found: " + slug));
+
+        boolean isAdmin = permissionRepo
+                .existsByProject_SlugAndUser_UsernameAndRole(slug, username, RoleEnum.ADMIN);
+        if (!isAdmin) {
+            throw new AccessDeniedException("Not admin of project " + slug);
+        }
+
+        proj.setName(newName);
+        Project saved = projectRepo.save(proj);
+
+        return new ProjectDTO(saved.getSlug(),
+                props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + saved.getBoltPort());
+    }
+
+    @Transactional
+    public void deleteProject(String slug, String username) throws InterruptedException {
+        Project proj = projectRepo.findBySlug(slug)
+                .orElseThrow(() -> new NoSuchElementException("Project not found: " + slug));
+
+        boolean isAdmin = permissionRepo
+                .existsByProject_SlugAndUser_UsernameAndRole(slug, username, RoleEnum.ADMIN);
+        if (!isAdmin) {
+            throw new AccessDeniedException("Not admin of project " + slug);
+        }
+
+        try {
+            dockerService.stopContainer(proj.getContainerId());
+        } catch (Exception e) {
+            log.warn("Failed to stop container {}: {}", proj.getContainerId(), e.getMessage());
+        }
+
+        projectRepo.delete(proj);
+        log.info("Project {} deleted by user {}", slug, username);
+    }
+
 }

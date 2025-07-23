@@ -34,4 +34,8 @@ public class GraphDataImporter {
             tx.run(cypher, Values.parameters("src", link.getSource(), "tgt", link.getTarget()));
         }
     }
+
+    public void deleteGraph(Transaction tx) {
+        tx.run("MATCH (n) DETACH DELETE n");
+    }
 }

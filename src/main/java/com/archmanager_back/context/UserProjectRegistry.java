@@ -6,9 +6,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-/**
- * username -> projectId actuellement connecté.
- */
 @Component
 public class UserProjectRegistry {
 
@@ -22,9 +19,6 @@ public class UserProjectRegistry {
         map.remove(username);
     }
 
-    /**
-     * @throws IllegalStateException si l'utilisateur n'est connecté à aucun projet.
-     */
     public Long currentProjectId(String username) {
         return Optional.ofNullable(map.get(username))
                 .orElseThrow(() -> new IllegalStateException(

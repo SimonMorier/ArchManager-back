@@ -4,8 +4,10 @@ import com.archmanager_back.model.dto.*;
 import com.archmanager_back.service.UserService;
 import lombok.RequiredArgsConstructor;
 
+import java.security.Principal;
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -41,5 +43,28 @@ public class UserController {
             @PathVariable String projectName) {
         List<UserResponseDTO> users = userService.getUsersByProjectName(projectName);
         return ResponseEntity.ok(users);
+    }
+
+    @DeleteMapping("/{username}")
+    public ResponseEntity<Void> deleteUser(
+            @PathVariable String username,
+            Principal principal) {
+        if (!principal.getName().equals(username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        userService.deleteUser(username);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PutMapping("/{username}")
+    public ResponseEntity<UserResponseDTO> updateUser(
+            @PathVariable String username,
+            @RequestBody UserRequestDTO request,
+            Principal principal) {
+        if (!principal.getName().equals(username)) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+        }
+        UserResponseDTO updated = userService.updateUser(username, request);
+        return ResponseEntity.ok(updated);
     }
 }

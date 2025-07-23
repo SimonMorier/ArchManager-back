@@ -1,7 +1,8 @@
 package com.archmanager_back.validator;
 
 import com.archmanager_back.config.constant.AppProperties;
-import com.archmanager_back.exception.ProjectValidationException;
+import com.archmanager_back.exception.custom.ProjectValidationException;
+
 import lombok.RequiredArgsConstructor;
 
 import static com.archmanager_back.config.constant.ErrorLabel.PROJECT_NAME_EMPTY;
