@@ -73,7 +73,6 @@ public class UserService {
         return users.stream()
                 .map(user -> {
                     UserResponseDTO dto = userMapper.toResponseDto(user);
-                    dto.setPermissions(null);
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -84,7 +83,6 @@ public class UserService {
         return users.stream()
                 .map(user -> {
                     UserResponseDTO dto = userMapper.toResponseDto(user);
-                    dto.setPermissions(null);
                     return dto;
                 })
                 .collect(Collectors.toList());

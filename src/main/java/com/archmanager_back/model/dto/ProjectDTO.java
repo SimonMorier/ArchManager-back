@@ -1,3 +1,21 @@
 package com.archmanager_back.model.dto;
 
-public record ProjectDTO(String slug, String boltUri) { }
+import lombok.Value;
+
+@Value
+public class ProjectDTO {
+    String slug;
+    String name;
+    String boltUri;
+    boolean isUp;
+    String description;
+
+    public static ProjectDTO from(com.archmanager_back.model.entity.jpa.Project p, String boltUri) {
+        return new ProjectDTO(
+                p.getSlug(),
+                p.getName(),
+                boltUri,
+                p.isUp(),
+                p.getDescription());
+    }
+}

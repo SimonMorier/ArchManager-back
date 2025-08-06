@@ -2,6 +2,7 @@ package com.archmanager_back.controller;
 
 import com.archmanager_back.context.UserProjectRegistry;
 import com.archmanager_back.model.dto.ProjectDTO;
+import com.archmanager_back.model.dto.ProjectRequestDTO;
 import com.archmanager_back.service.project.ProjectService;
 
 import lombok.RequiredArgsConstructor;
@@ -10,6 +11,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @RestController
@@ -20,10 +22,11 @@ public class ProjectController {
     private final ProjectService projectService;
     private final UserProjectRegistry userProjectRegistry;
 
-    @PostMapping("/{name}")
-    public ResponseEntity<ProjectDTO> createProject(@PathVariable String name)
+    @PostMapping("/create")
+    public ResponseEntity<ProjectDTO> createProject(
+            @RequestBody ProjectRequestDTO request)
             throws InterruptedException {
-        ProjectDTO dto = projectService.createProject(name);
+        ProjectDTO dto = projectService.createProject(request.getName(), request.getDescription());
         return ResponseEntity.ok(dto);
     }
 
@@ -55,14 +58,13 @@ public class ProjectController {
     }
 
     @PutMapping("/{slug}")
-    public ResponseEntity<ProjectDTO> renameProject(
+    public ResponseEntity<ProjectDTO> updateProject(
             @PathVariable String slug,
-            @RequestParam("name") String newName,
+            @RequestBody ProjectRequestDTO request,
             @AuthenticationPrincipal UserDetails user)
             throws InterruptedException {
-
-        ProjectDTO updated = projectService.updateProjectName(
-                slug, newName, user.getUsername());
+        ProjectDTO updated = projectService.updateProject(
+                slug, request.getName(), request.getDescription(), user.getUsername());
         return ResponseEntity.ok(updated);
     }
 
@@ -74,5 +76,12 @@ public class ProjectController {
 
         projectService.deleteProject(slug, user.getUsername());
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ProjectDTO>> listUserProjects(
+            @AuthenticationPrincipal UserDetails user) {
+        List<ProjectDTO> dtos = projectService.getProjectsForUser(user.getUsername());
+        return ResponseEntity.ok(dtos);
     }
 }

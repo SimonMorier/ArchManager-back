@@ -29,23 +29,16 @@ public class IdleContainerReaperScheduler {
         Duration idleThreshold = Duration.ofMinutes(props.getProject().getIdleThreshold());
         Instant cutoff = Instant.now().minus(idleThreshold);
 
-        List<Project> toStop = projectRepo.findAll().stream()
-                .filter(p -> p.getActiveSessionCount() == 0)
-                .filter(p -> p.getLastActivity() != null && p.getLastActivity().isBefore(cutoff))
-                .toList();
+        List<Project> toStop = projectRepo
+                .findByIsUpFalseAndLastActivityBefore(cutoff);
 
         log.debug("IdleContainerReaper running: found {} idle projects to stop", toStop.size());
 
         for (Project p : toStop) {
-            if (p.getContainerId() != null) {
-                log.info("Stopping idle container for project '{}', containerId={}", p.getSlug(), p.getContainerId());
-                dockerService.stopContainer(p.getContainerId());
-                if (projectRepo.existsById(p.getId())) {
-                    p.setContainerId(null);
-                    projectRepo.save(p);
-                } else {
-                    log.info("Project {} already deleted from DB, skipping save.", p.getSlug());
-                }
+            String cid = p.getContainerId();
+            if (cid != null) {
+                log.info("Stopping idle container for project '{}', containerId={}", p.getSlug(), cid);
+                dockerService.stopContainer(cid);
             } else {
                 log.debug("Project '{}' has no container to stop.", p.getSlug());
             }

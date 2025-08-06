@@ -1,6 +1,7 @@
 package com.archmanager_back.config.db;
 
 import java.time.Instant;
+import java.util.List;
 
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.core.annotation.Order;
@@ -31,6 +32,16 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+
+        List<Project> all = projectRepository.findAll();
+        for (Project p : all) {
+            p.setActiveSessionCount(0);
+            p.setUp(false);
+            p.setLastActivity(Instant.now());
+        }
+        projectRepository.saveAll(all);
+
+        log.info("Reset {} projets : activeSessionCount=0 et isUp=false", all.size());
         if (userRepository.count() > 0) {
             log.info("Users already exist, skipping seeding");
             return;

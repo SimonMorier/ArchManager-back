@@ -1,6 +1,7 @@
 package com.archmanager_back.service.project;
 
 import com.archmanager_back.config.constant.AppProperties;
+import com.archmanager_back.context.UserProjectRegistry;
 import com.archmanager_back.model.domain.ContainerInstance;
 import com.archmanager_back.model.domain.RoleEnum;
 import com.archmanager_back.model.dto.ProjectDTO;
@@ -22,6 +23,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -32,6 +34,7 @@ import static com.archmanager_back.config.constant.ErrorLabel.*;
 @Slf4j
 public class ProjectService {
 
+    private final UserProjectRegistry userProjectRegistry;
     private final AppProperties props;
     private final ProjectRepository projectRepo;
     private final UserRepository userRepo;
@@ -41,7 +44,7 @@ public class ProjectService {
     private final DockerProjectService dockerService;
 
     @Transactional
-    public Project createAndStart(String name, String username) throws InterruptedException {
+    public Project createAndStart(String name, String description, String username) throws InterruptedException {
         projectValidator.validateProjectName(name);
 
         String slug = Project.generateSlug(props.getProject().getSlugPrefix());
@@ -52,6 +55,7 @@ public class ProjectService {
 
         Project p = new Project();
         p.setName(name);
+        p.setDescription(description);
         p.setSlug(slug);
         p.setContainerId(inst.containerId());
         p.setBoltPort(inst.hostBoltPort());
@@ -80,6 +84,15 @@ public class ProjectService {
         Project project = projectRepo.findBySlug(slug)
                 .orElseThrow(() -> new NoSuchElementException(PROJECT_NOT_FOUND));
 
+        try {
+            Long previousProjectId = userProjectRegistry.currentProjectId(username);
+            if (!previousProjectId.equals(project.getId())) {
+                log.debug("User {} was on project {}, disconnecting it first", username, previousProjectId);
+                disconnectProject(previousProjectId);
+            }
+        } catch (IllegalStateException e) {
+        }
+
         permissionValidator.requirePermission(user, project, RoleEnum.READ);
 
         dockerService.ensureProjectRunning(project);
@@ -89,7 +102,8 @@ public class ProjectService {
         projectRepo.save(project);
 
         String boltUri = props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + project.getBoltPort();
-        return new ProjectDTO(project.getSlug(), boltUri);
+
+        return ProjectDTO.from(project, boltUri);
     }
 
     @Transactional
@@ -101,11 +115,13 @@ public class ProjectService {
         log.debug("Project {} sessions decremented, now {}", p.getSlug(), p.getActiveSessionCount());
     }
 
-    public ProjectDTO createProject(String name) throws InterruptedException {
+    public ProjectDTO createProject(String name, String description) throws InterruptedException {
         String username = getCurrentUsername();
-        Project p = createAndStart(name, username);
-        return new ProjectDTO(p.getSlug(),
-                props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + p.getBoltPort());
+        Project p = createAndStart(name, description, username);
+        String boltUri = props.getNeo4j().getBoltPrefix()
+                + props.getDocker().getHost()
+                + p.getBoltPort();
+        return ProjectDTO.from(p, boltUri);
     }
 
     public Optional<Project> findBySlug(String slug) {
@@ -128,22 +144,18 @@ public class ProjectService {
         throw new IllegalStateException("No authenticated user found in security context");
     }
 
-    public ProjectDTO updateProjectName(String slug, String newName, String username)
-            throws InterruptedException {
+    @Transactional
+    public ProjectDTO updateProject(String slug, String newName, String newDescription, String username) {
         Project proj = projectRepo.findBySlug(slug)
                 .orElseThrow(() -> new NoSuchElementException("Project not found: " + slug));
-
-        boolean isAdmin = permissionRepo
-                .existsByProject_SlugAndUser_UsernameAndRole(slug, username, RoleEnum.ADMIN);
-        if (!isAdmin) {
-            throw new AccessDeniedException("Not admin of project " + slug);
-        }
-
+        // vérification admin
         proj.setName(newName);
+        proj.setDescription(newDescription);
         Project saved = projectRepo.save(proj);
-
-        return new ProjectDTO(saved.getSlug(),
-                props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + saved.getBoltPort());
+        String boltUri = props.getNeo4j().getBoltPrefix()
+                + props.getDocker().getHost()
+                + saved.getBoltPort();
+        return ProjectDTO.from(saved, boltUri);
     }
 
     @Transactional
@@ -165,6 +177,20 @@ public class ProjectService {
 
         projectRepo.delete(proj);
         log.info("Project {} deleted by user {}", slug, username);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ProjectDTO> getProjectsForUser(String username) {
+        List<Project> projects = projectRepo.findAllByPermissions_User_Username(username);
+
+        return projects.stream()
+                .map(p -> {
+                    String boltUri = props.getNeo4j().getBoltPrefix()
+                            + props.getDocker().getHost()
+                            + p.getBoltPort();
+                    return ProjectDTO.from(p, boltUri);
+                })
+                .toList();
     }
 
 }

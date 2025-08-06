@@ -43,7 +43,7 @@ public class DynamicNeo4jDriverConfig {
                 uri,
                 AuthTokens.basic("neo4j", project.getPassword()),
                 org.neo4j.driver.Config.builder()
-                        .withMaxConnectionPoolSize(5)
+                        .withMaxConnectionPoolSize(20)
                         .build());
     }
 }

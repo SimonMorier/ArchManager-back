@@ -33,7 +33,7 @@ public class Neo4jDriverRegistry {
 
         return GraphDatabase.driver(uri,
                 AuthTokens.basic("neo4j", p.getPassword()),
-                Config.builder().withMaxConnectionPoolSize(10).build());
+                Config.builder().withMaxConnectionPoolSize(20).build());
     }
 
     public void closeAll() {

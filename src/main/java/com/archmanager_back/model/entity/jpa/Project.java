@@ -31,6 +31,9 @@ public class Project {
 
     private String name;
 
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Permission> permissions = new HashSet<>();
 
@@ -40,17 +43,22 @@ public class Project {
     @Column
     private Instant lastActivity;
 
+    @Column(nullable = false)
+    private boolean isUp = false;
+
     public void touchActivity() {
         this.lastActivity = Instant.now();
     }
 
     public void incrementSessions() {
         this.activeSessionCount++;
+        this.isUp = true;
         touchActivity();
     }
 
     public void decrementSessions() {
         this.activeSessionCount = Math.max(0, this.activeSessionCount - 1);
+        this.isUp = this.activeSessionCount > 0;
         touchActivity();
     }
 

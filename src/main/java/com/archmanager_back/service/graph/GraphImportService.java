@@ -18,8 +18,7 @@ public class GraphImportService {
     public void importGraph(String username, GraphDTO graph) {
         try (Session session = neo4jProvider.sessionFor(username)) {
             session.writeTransaction(tx -> {
-                dataImporter.importNodes(tx, graph.getNodes());
-                dataImporter.importLinks(tx, graph.getLinks());
+                dataImporter.importGraph(tx, graph.getNodes(), graph.getLinks());
                 return null;
             });
         }
