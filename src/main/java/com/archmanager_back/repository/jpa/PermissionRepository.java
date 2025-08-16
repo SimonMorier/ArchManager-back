@@ -13,42 +13,44 @@ import com.archmanager_back.model.entity.jpa.Permission;
 @Repository
 public interface PermissionRepository extends JpaRepository<Permission, Long> {
 
-        Optional<Permission> findByUserIdAndProjectId(Long userId, Long projectId);
+  Optional<Permission> findByUserIdAndProjectId(Long userId, Long projectId);
 
-        List<Permission> findByUserId(Long userId);
+  List<Permission> findByUserId(Long userId);
 
-        List<Permission> findByProjectId(Long projectId);
+  List<Permission> findByProjectId(Long projectId);
 
-        @Query(value = """
-                        SELECT EXISTS (
-                          SELECT 1
-                          FROM permissions p
-                          JOIN project pr  ON p.project_id = pr.id
-                          JOIN users u     ON p.user_id    = u.id
-                          WHERE pr.slug    = :projectSlug
-                            AND u.username = :username
-                            AND p.role     = :role
-                        )
-                        """, nativeQuery = true)
-        boolean existsByProjectSlugAndUsernameAndRole(String projectSlug,
-                        String username,
-                        RoleEnum role);
+  @Query(value = """
+      SELECT EXISTS (
+        SELECT 1
+        FROM permissions p
+        JOIN project pr  ON p.project_id = pr.id
+        JOIN users u     ON p.user_id    = u.id
+        WHERE pr.slug    = :projectSlug
+          AND u.username = :username
+          AND p.role     = :role
+      )
+      """, nativeQuery = true)
+  boolean existsByProjectSlugAndUsernameAndRole(String projectSlug,
+      String username,
+      RoleEnum role);
 
-        @Query(value = """
-                        SELECT *
-                        FROM permissions p
-                        JOIN project pr  ON p.project_id = pr.id
-                        JOIN users u     ON p.user_id    = u.id
-                        WHERE pr.slug    = :projectSlug
-                          AND u.username = :username
-                          AND p.role     = :role
-                        """, nativeQuery = true)
-        Optional<Permission> findByProjectSlugAndUsernameAndRole(String projectSlug,
-                        String username,
-                        RoleEnum role);
+  @Query(value = """
+      SELECT *
+      FROM permissions p
+      JOIN project pr  ON p.project_id = pr.id
+      JOIN users u     ON p.user_id    = u.id
+      WHERE pr.slug    = :projectSlug
+        AND u.username = :username
+        AND p.role     = :role
+      """, nativeQuery = true)
+  Optional<Permission> findByProjectSlugAndUsernameAndRole(String projectSlug,
+      String username,
+      RoleEnum role);
 
-        boolean existsByProject_SlugAndUser_UsernameAndRole(
-                        String projectSlug,
-                        String username,
-                        RoleEnum role);
+  boolean existsByProject_SlugAndUser_UsernameAndRole(
+      String projectSlug,
+      String username,
+      RoleEnum role);
+
+  List<Permission> findAllByUser_Username(String username);
 }

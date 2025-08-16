@@ -15,7 +15,7 @@ public interface ProjectRepository extends JpaRepository<Project, Long> {
 
   Optional<Project> findByContainerId(String containerId);
 
-  List<Project> findByIsUpFalseAndLastActivityBefore(Instant cutoff);
+  List<Project> findByIsUpTrueAndLastActivityBefore(Instant cutoff);
 
   List<Project> findAllByPermissions_User_Username(String username);
 }

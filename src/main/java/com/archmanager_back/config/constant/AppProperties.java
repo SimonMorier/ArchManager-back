@@ -42,6 +42,7 @@ public class AppProperties {
         private int maxNameLength;
         private int idleThreshold;
         private int idleRateMs;
+        private int chunkSize;
     }
 
     @Data

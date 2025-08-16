@@ -4,6 +4,9 @@ import com.archmanager_back.model.dto.PermissionRequestDTO;
 import com.archmanager_back.service.PermissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,5 +36,14 @@ public class PermissionController {
                         @Valid @RequestBody PermissionRequestDTO req) {
                 permissionService.revokePermission(currentUser.getUsername(), req);
                 return ResponseEntity.noContent().build();
+        }
+
+        @GetMapping
+        @Transactional(readOnly = true)
+        public ResponseEntity<List<PermissionRequestDTO>> listUserPermissions(
+                        @AuthenticationPrincipal UserDetails currentUser) {
+                List<PermissionRequestDTO> perms = permissionService
+                                .getUserPermissions(currentUser.getUsername());
+                return ResponseEntity.ok(perms);
         }
 }

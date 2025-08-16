@@ -84,4 +84,13 @@ public class ProjectController {
         List<ProjectDTO> dtos = projectService.getProjectsForUser(user.getUsername());
         return ResponseEntity.ok(dtos);
     }
+
+    @GetMapping("/{slug}")
+    public ResponseEntity<ProjectDTO> getProjectBySlug(
+            @PathVariable String slug,
+            @AuthenticationPrincipal UserDetails user) {
+
+        ProjectDTO dto = projectService.getProjectBySlugForUser(slug, user.getUsername());
+        return ResponseEntity.ok(dto);
+    }
 }

@@ -36,7 +36,7 @@ public class DataSeeder implements CommandLineRunner {
         List<Project> all = projectRepository.findAll();
         for (Project p : all) {
             p.setActiveSessionCount(0);
-            p.setUp(false);
+
             p.setLastActivity(Instant.now());
         }
         projectRepository.saveAll(all);

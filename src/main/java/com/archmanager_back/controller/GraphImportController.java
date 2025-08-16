@@ -1,16 +1,24 @@
 package com.archmanager_back.controller;
 
+import com.archmanager_back.model.dto.GraphMutateResultDTO;
 import com.archmanager_back.model.dto.ImportResponseDTO;
 import com.archmanager_back.model.dto.graph.GraphDTO;
+import com.archmanager_back.model.dto.graph.update.GraphPatchDTO;
 import com.archmanager_back.model.domain.RoleEnum;
 import com.archmanager_back.model.entity.jpa.Project;
 import com.archmanager_back.context.UserProjectRegistry;
 import com.archmanager_back.service.graph.GraphImportService;
+import com.archmanager_back.service.graph.GraphMutationService;
 import com.archmanager_back.service.project.ProjectService;
 import com.archmanager_back.validator.GraphDTOValidator;
 import com.archmanager_back.validator.PermissionValidator;
+
+import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -27,6 +35,7 @@ public class GraphImportController {
         private final PermissionValidator permVal;
         private final GraphDTOValidator validator;
         private final UserProjectRegistry userProj;
+        private final GraphMutationService mutationService;
 
         @PostMapping
         public ResponseEntity<ImportResponseDTO> importGraph(@AuthenticationPrincipal UserDetails user,
@@ -75,5 +84,19 @@ public class GraphImportController {
                 importSvc.deleteGraph(user.getUsername());
 
                 return ResponseEntity.noContent().build();
+        }
+
+        @PostMapping("/mutate")
+        @Transactional
+        public ResponseEntity<GraphDTO> mutate(
+                        @AuthenticationPrincipal UserDetails user,
+                        @RequestBody GraphPatchDTO patch) {
+                Long projectId = userProj.currentProjectId(user.getUsername());
+                Project project = projectSvc.findById(projectId)
+                                .orElseThrow(() -> new IllegalStateException("Project not found"));
+
+                permVal.requirePermission(user, project, RoleEnum.EDIT);
+                GraphDTO updated = mutationService.mutateAndReimport(user.getUsername(), patch);
+                return ResponseEntity.ok(updated);
         }
 }

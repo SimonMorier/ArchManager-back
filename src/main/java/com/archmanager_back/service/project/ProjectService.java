@@ -47,7 +47,11 @@ public class ProjectService {
     public Project createAndStart(String name, String description, String username) throws InterruptedException {
         projectValidator.validateProjectName(name);
 
-        String slug = Project.generateSlug(props.getProject().getSlugPrefix());
+        String prefix = props.getProject().getSlugPrefix();
+        String slug;
+        do {
+            slug = Project.generateSlug(prefix);
+        } while (projectRepo.existsBySlug(slug));
         String password = Project.generatePassword(props.getDocker().getPasswordLength());
         String volumeName = Project.generateVolumeName(slug, props.getProject().getVolumeSuffix());
 
@@ -148,7 +152,6 @@ public class ProjectService {
     public ProjectDTO updateProject(String slug, String newName, String newDescription, String username) {
         Project proj = projectRepo.findBySlug(slug)
                 .orElseThrow(() -> new NoSuchElementException("Project not found: " + slug));
-        // vérification admin
         proj.setName(newName);
         proj.setDescription(newDescription);
         Project saved = projectRepo.save(proj);
@@ -191,6 +194,24 @@ public class ProjectService {
                     return ProjectDTO.from(p, boltUri);
                 })
                 .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public ProjectDTO getProjectBySlugForUser(String slug, String username) {
+        Project project = projectRepo.findBySlug(slug)
+                .orElseThrow(() -> new NoSuchElementException("Unknown project: " + slug));
+
+        boolean hasPermission = project.getPermissions().stream()
+                .anyMatch(perm -> perm.getUser().getUsername().equals(username));
+        if (!hasPermission) {
+            throw new AccessDeniedException("You do not have permission to access this project");
+        }
+
+        String boltUri = props.getNeo4j().getBoltPrefix()
+                + props.getDocker().getHost()
+                + project.getBoltPort();
+
+        return ProjectDTO.from(project, boltUri);
     }
 
 }

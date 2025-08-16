@@ -17,6 +17,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
@@ -70,5 +71,19 @@ public class PermissionService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         "Permission introuvable pour " + req.getUsername()));
         permissionRepo.delete(perm);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PermissionRequestDTO> getUserPermissions(String username) {
+        // On récupère toutes les Permission pour cet utilisateur
+        List<Permission> perms = permissionRepo.findAllByUser_Username(username);
+
+        // On mappe en PermissionRequestDTO (username, projectSlug, role)
+        return perms.stream()
+                .map(p -> new PermissionRequestDTO(
+                        p.getProject().getSlug(),
+                        p.getUser().getUsername(),
+                        p.getRole()))
+                .toList();
     }
 }

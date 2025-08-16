@@ -5,10 +5,12 @@ import com.archmanager_back.model.dto.graph.GraphDTO;
 import com.archmanager_back.service.graph.importer.GraphDataImporter;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.neo4j.driver.Session;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class GraphImportService {
 
@@ -18,6 +20,7 @@ public class GraphImportService {
     public void importGraph(String username, GraphDTO graph) {
         try (Session session = neo4jProvider.sessionFor(username)) {
             session.writeTransaction(tx -> {
+                dataImporter.deleteGraph(tx);
                 dataImporter.importGraph(tx, graph.getNodes(), graph.getLinks());
                 return null;
             });

@@ -58,7 +58,6 @@ public class Project {
 
     public void decrementSessions() {
         this.activeSessionCount = Math.max(0, this.activeSessionCount - 1);
-        this.isUp = this.activeSessionCount > 0;
         touchActivity();
     }
 

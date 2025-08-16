@@ -30,7 +30,7 @@ public class IdleContainerReaperScheduler {
         Instant cutoff = Instant.now().minus(idleThreshold);
 
         List<Project> toStop = projectRepo
-                .findByIsUpFalseAndLastActivityBefore(cutoff);
+                .findByIsUpTrueAndLastActivityBefore(cutoff);
 
         log.debug("IdleContainerReaper running: found {} idle projects to stop", toStop.size());
 

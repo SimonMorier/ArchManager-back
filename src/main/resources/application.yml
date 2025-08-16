@@ -39,6 +39,7 @@ app:
     max-name-length: 50
     idle-threshold: 30
     idle-rate-ms: 600000
+    chunk-size: 5000
   healthcheck:
     interval: 1s
     timeout: 60s
