@@ -1,0 +1,56 @@
+package com.archmanager_back.infrastructure.graph.adapters.community;
+
+import com.archmanager_back.domain.project.Project;
+import com.archmanager_back.infrastructure.config.constant.AppProperties;
+import com.archmanager_back.infrastructure.persistence.jpa.ProjectRepository;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.neo4j.driver.*;
+import org.springframework.stereotype.Component;
+
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+@Component
+@Slf4j
+@RequiredArgsConstructor
+public class Neo4jDriverRegistry {
+
+    private final AppProperties props;
+    private final ProjectRepository projectRepo;
+    private final ConcurrentMap<Long, Driver> drivers = new ConcurrentHashMap<>();
+
+    public Driver getDriver(Long projectId) {
+        return drivers.computeIfAbsent(projectId, this::createDriver);
+    }
+
+    public void close(Long projectId) {
+        Driver d = drivers.remove(projectId);
+        if (d != null) {
+            try {
+                d.close();
+                log.debug("Closed Neo4j driver for project {}", projectId);
+            } catch (Exception e) {
+                log.warn("Error closing driver for project {}: {}", projectId, e.getMessage());
+            }
+        }
+    }
+
+    private Driver createDriver(Long projectId) {
+        Project p = projectRepo.findById(projectId)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown project " + projectId));
+
+        String uri = props.getNeo4j().getBoltPrefix() + props.getDocker().getHost() + p.getBoltPort();
+        log.debug("Create Neo4j driver for project {} -> {}", p.getSlug(), uri);
+
+        return GraphDatabase.driver(uri,
+                AuthTokens.basic("neo4j", p.getPassword()),
+                Config.builder().withMaxConnectionPoolSize(20).build());
+    }
+
+    public void closeAll() {
+        drivers.values().forEach(Driver::close);
+        drivers.clear();
+    }
+}

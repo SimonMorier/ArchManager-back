@@ -1,0 +1,51 @@
+package com.archmanager_back.api.permission;
+
+import com.archmanager_back.api.permission.dto.PermissionRequestDTO;
+import com.archmanager_back.application.permission.PermissionService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/permissions")
+@RequiredArgsConstructor
+public class PermissionController {
+
+        private final PermissionService permissionService;
+
+        @PostMapping
+        @Transactional
+        public ResponseEntity<PermissionRequestDTO> grantPermission(
+                        @AuthenticationPrincipal UserDetails currentUser,
+                        @Valid @RequestBody PermissionRequestDTO req) {
+                PermissionRequestDTO resp = permissionService.grantPermission(currentUser.getUsername(), req);
+                return ResponseEntity.ok(resp);
+        }
+
+        @DeleteMapping
+        @Transactional
+        public ResponseEntity<Void> revokePermission(
+                        @AuthenticationPrincipal UserDetails currentUser,
+                        @Valid @RequestBody PermissionRequestDTO req) {
+                permissionService.revokePermission(currentUser.getUsername(), req);
+                return ResponseEntity.noContent().build();
+        }
+
+        @GetMapping
+        @Transactional(readOnly = true)
+        public ResponseEntity<List<PermissionRequestDTO>> listUserPermissions(
+                        @AuthenticationPrincipal UserDetails currentUser) {
+                List<PermissionRequestDTO> perms = permissionService
+                                .getUserPermissions(currentUser.getUsername());
+                return ResponseEntity.ok(perms);
+        }
+
+}
