@@ -1,4 +1,4 @@
-package com.archmanager_back.api.graph;
+package com.archmanager_back.api.graph.dto;
 
 import java.time.OffsetDateTime;
 import lombok.AllArgsConstructor;

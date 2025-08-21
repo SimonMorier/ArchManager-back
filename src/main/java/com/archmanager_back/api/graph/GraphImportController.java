@@ -1,6 +1,7 @@
 package com.archmanager_back.api.graph;
 
 import com.archmanager_back.api.graph.dto.GraphDTO;
+import com.archmanager_back.api.graph.dto.ImportResponseDTO;
 import com.archmanager_back.api.graph.dto.update.GraphPatchDTO;
 import com.archmanager_back.application.graph.GraphImportService;
 import com.archmanager_back.application.graph.GraphMutationService;
