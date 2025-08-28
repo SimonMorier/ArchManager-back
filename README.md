@@ -23,7 +23,7 @@ docker run --name archmanager-postgres -e POSTGRES_PASSWORD=MonMotDePasse123   -
 docker pull neo4j:5.26-community
 
 # 3) Build & run the app
-mvn -q -DskipTests clean package
+mvn install
 mvn spring-boot:run
 
 # 4) Open API docs
